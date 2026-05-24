@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NCERT Game — Learn Through Play</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       NAVBAR
+  ══════════════════════════════════════════ -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#science" class="active">Science</a></li>
+      <li><a href="#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Class 11 &amp; 12 · CBSE · NCERT
+      </div>
+
+      <h1>
+        Make NCERT<br />
+        <span class="highlight-science">Science</span> &amp;
+        <span class="highlight-commerce">Commerce</span><br />
+        Actually Fun
+      </h1>
+
+      <p>
+        Stop mugging up. Start playing. Every chapter, every concept —
+        turned into games that actually make you remember.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#science" class="btn btn-science">⚗️ Science Stream</a>
+        <a href="#commerce" class="btn btn-commerce">📊 Commerce Stream</a>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-number">16+</div>
+        <div class="stat-label">Subjects</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">100+</div>
+        <div class="stat-label">Games</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Streams</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">Free</div>
+        <div class="stat-label">Always</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SCIENCE STREAM
+  ══════════════════════════════════════════ -->
+  <div id="science" class="stream-section science-stream">
+
+    <div class="section-header">
+      <div class="section-tag science">⚗️ Stream 1</div>
+      <h2>Science Stream</h2>
+      <p>Physics, Chemistry, Biology &amp; Maths — all gamified chapter by chapter.</p>
+    </div>
+
+    <!-- Class Tabs -->
+    <div class="class-tabs">
+      <button class="tab-btn active-science" onclick="switchTab('science', '11')">Class 11</button>
+      <button class="tab-btn" onclick="switchTab('science', '12')">Class 12</button>
+    </div>
+
+    <!-- ── Class 11 ── -->
+    <div id="science-11" class="class-panel active">
+      <div class="subjects-grid">
+
+        <a href="pages/science-11.html#physics" class="subject-card" data-subject="physics">
+          <div class="subject-icon physics">⚡</div>
+          <h3>Physics</h3>
+          <p>Kinematics, Laws of Motion, Thermodynamics, Waves &amp; more.</p>
+          <div class="subject-meta">
+            <span class="game-count physics">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/science-11.html#chemistry" class="subject-card" data-subject="chemistry">
+          <div class="subject-icon chemistry">🧪</div>
+          <h3>Chemistry</h3>
+          <p>Atomic Structure, Bonding, Thermodynamics, Hydrocarbons &amp; more.</p>
+          <div class="subject-meta">
+            <span class="game-count chemistry">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/science-11.html#biology" class="subject-card" data-subject="biology">
+          <div class="subject-icon biology">🌿</div>
+          <h3>Biology</h3>
+          <p>Cell Structure, Plant &amp; Human Physiology, Diversity of Life.</p>
+          <div class="subject-meta">
+            <span class="game-count biology">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/science-11.html#maths" class="subject-card" data-subject="maths">
+          <div class="subject-icon maths">📐</div>
+          <h3>Mathematics</h3>
+          <p>Sets, Trigonometry, Sequences, Coordinate Geometry, Calculus intro.</p>
+          <div class="subject-meta">
+            <span class="game-count maths">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ── Class 12 ── -->
+    <div id="science-12" class="class-panel">
+      <div class="subjects-grid">
+
+        <a href="pages/science-12.html#physics" class="subject-card" data-subject="physics">
+          <div class="subject-icon physics">⚡</div>
+          <h3>Physics</h3>
+          <p>Electrostatics, Magnetism, Optics, Modern Physics &amp; more.</p>
+          <div class="subject-meta">
+            <span class="game-count physics">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/science-12.html#chemistry" class="subject-card" data-subject="chemistry">
+          <div class="subject-icon chemistry">🧪</div>
+          <h3>Chemistry</h3>
+          <p>Solutions, Electrochemistry, Biomolecules, Coordination Compounds.</p>
+          <div class="subject-meta">
+            <span class="game-count chemistry">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/science-12.html#biology" class="subject-card" data-subject="biology">
+          <div class="subject-icon biology">🌿</div>
+          <h3>Biology</h3>
+          <p>Genetics, Evolution, Biotechnology, Reproduction &amp; Ecology.</p>
+          <div class="subject-meta">
+            <span class="game-count biology">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/science-12.html#maths" class="subject-card" data-subject="maths">
+          <div class="subject-icon maths">📐</div>
+          <h3>Mathematics</h3>
+          <p>Calculus, Matrices, Vectors, 3D Geometry, Probability.</p>
+          <div class="subject-meta">
+            <span class="game-count maths">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+  </div><!-- /science stream -->
+
+  <div class="stream-divider"></div>
+
+  <!-- ══════════════════════════════════════════
+       COMMERCE STREAM
+  ══════════════════════════════════════════ -->
+  <div id="commerce" class="stream-section commerce-stream">
+
+    <div class="section-header">
+      <div class="section-tag commerce">📊 Stream 2</div>
+      <h2>Commerce Stream</h2>
+      <p>Accountancy, Business Studies, Economics &amp; Maths — made playable.</p>
+    </div>
+
+    <!-- Class Tabs -->
+    <div class="class-tabs">
+      <button class="tab-btn active-commerce" onclick="switchTab('commerce', '11')">Class 11</button>
+      <button class="tab-btn" onclick="switchTab('commerce', '12')">Class 12</button>
+    </div>
+
+    <!-- ── Class 11 ── -->
+    <div id="commerce-11" class="class-panel active">
+      <div class="subjects-grid">
+
+        <a href="pages/commerce-11.html#accounts" class="subject-card" data-subject="accounts">
+          <div class="subject-icon accounts">📒</div>
+          <h3>Accountancy</h3>
+          <p>Journal Entries, Ledger, Trial Balance, Financial Statements.</p>
+          <div class="subject-meta">
+            <span class="game-count accounts">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/commerce-11.html#bst" class="subject-card" data-subject="bst">
+          <div class="subject-icon bst">🏢</div>
+          <h3>Business Studies</h3>
+          <p>Forms of Business, Finance, Trade, Social Responsibility.</p>
+          <div class="subject-meta">
+            <span class="game-count bst">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/commerce-11.html#economics" class="subject-card" data-subject="economics">
+          <div class="subject-icon economics">📈</div>
+          <h3>Economics</h3>
+          <p>Statistics for Economics, Microeconomics, Supply &amp; Demand.</p>
+          <div class="subject-meta">
+            <span class="game-count economics">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/commerce-11.html#maths" class="subject-card" data-subject="maths">
+          <div class="subject-icon maths">📐</div>
+          <h3>Mathematics</h3>
+          <p>Sets, Algebra, Trigonometry, Statistics, Probability.</p>
+          <div class="subject-meta">
+            <span class="game-count maths">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- ── Class 12 ── -->
+    <div id="commerce-12" class="class-panel">
+      <div class="subjects-grid">
+
+        <a href="pages/commerce-12.html#accounts" class="subject-card" data-subject="accounts">
+          <div class="subject-icon accounts">📒</div>
+          <h3>Accountancy</h3>
+          <p>Partnership Accounts, Company Accounts, Cash Flow Statement.</p>
+          <div class="subject-meta">
+            <span class="game-count accounts">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/commerce-12.html#bst" class="subject-card" data-subject="bst">
+          <div class="subject-icon bst">🏢</div>
+          <h3>Business Studies</h3>
+          <p>Management, Planning, Organising, Marketing, Finance.</p>
+          <div class="subject-meta">
+            <span class="game-count bst">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/commerce-12.html#economics" class="subject-card" data-subject="economics">
+          <div class="subject-icon economics">📈</div>
+          <h3>Economics</h3>
+          <p>Macroeconomics, National Income, Indian Economic Development.</p>
+          <div class="subject-meta">
+            <span class="game-count economics">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+        <a href="pages/commerce-12.html#maths" class="subject-card" data-subject="maths">
+          <div class="subject-icon maths">📐</div>
+          <h3>Mathematics</h3>
+          <p>Calculus, Matrices, Linear Programming, Probability.</p>
+          <div class="subject-meta">
+            <span class="game-count maths">8 Games</span>
+            <div class="card-arrow">→</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+  </div><!-- /commerce stream -->
+
+  <!-- ══════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-logo">🎮 NCERTGame</div>
+    <p>Built for Class 11 &amp; 12 students · CBSE · 2025–26 Syllabus</p>
+  </footer>
+
+  <!-- ══════════════════════════════════════════
+       JS
+  ══════════════════════════════════════════ -->
+  <script src="js/main.js"></script>
+
+</body>
+</html>

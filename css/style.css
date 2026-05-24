@@ -1,0 +1,861 @@
+/* ============================================================
+   NCERT GAME — Design System
+   style.css
+   ============================================================ */
+
+/* ── Google Fonts ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap');
+
+/* ── CSS Variables ────────────────────────────────────────── */
+:root {
+  /* Colors */
+  --bg:            #0a0a0f;
+  --bg-2:          #111118;
+  --bg-card:       #16161f;
+  --bg-card-hover: #1c1c28;
+  --border:        rgba(255,255,255,0.07);
+  --border-hover:  rgba(255,255,255,0.18);
+
+  --text-primary:  #f0f0f8;
+  --text-secondary:#9090a8;
+  --text-muted:    #55556a;
+
+  /* Accent – Science = Electric Cyan */
+  --science:       #00e5ff;
+  --science-dim:   rgba(0, 229, 255, 0.12);
+  --science-glow:  rgba(0, 229, 255, 0.35);
+
+  /* Accent – Commerce = Amber Gold */
+  --commerce:      #ffb300;
+  --commerce-dim:  rgba(255, 179, 0, 0.12);
+  --commerce-glow: rgba(255, 179, 0, 0.35);
+
+  /* Subject colors */
+  --physics:    #7c83ff;
+  --chemistry:  #ff6b9d;
+  --biology:    #56cf91;
+  --maths:      #ff9f45;
+  --accounts:   #4ecdc4;
+  --bst:        #c77dff;
+  --economics:  #ff6b6b;
+
+  /* Typography */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  /* Spacing */
+  --radius-sm:  8px;
+  --radius-md:  14px;
+  --radius-lg:  22px;
+  --radius-xl:  32px;
+
+  /* Transitions */
+  --ease:       cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring:cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reset ────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul { list-style: none; }
+
+img { max-width: 100%; display: block; }
+
+/* ── Background Noise Texture ─────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 99px; }
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 68px;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-logo .logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--science), var(--commerce));
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+}
+
+.nav-logo span { color: var(--text-secondary); font-weight: 400; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-links a {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease);
+  border: 1px solid transparent;
+}
+
+.nav-links a:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border-color: var(--border);
+}
+
+.nav-links a.active {
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border-color: var(--border-hover);
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 100px 24px 60px;
+  overflow: hidden;
+}
+
+/* Radial glow blobs */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 400px;
+  background: radial-gradient(ellipse at center,
+    rgba(0,229,255,0.08) 0%,
+    rgba(255,179,0,0.06) 50%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  background: var(--science);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 24px;
+}
+
+.hero h1 .highlight-science {
+  background: linear-gradient(90deg, var(--science), #7c83ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero h1 .highlight-commerce {
+  background: linear-gradient(90deg, var(--commerce), #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 520px;
+  margin: 0 auto 44px;
+  line-height: 1.7;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-spring);
+  border: none;
+  text-decoration: none;
+}
+
+.btn-science {
+  background: var(--science);
+  color: #000;
+  box-shadow: 0 0 28px var(--science-glow);
+}
+.btn-science:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 44px var(--science-glow);
+}
+
+.btn-commerce {
+  background: var(--commerce);
+  color: #000;
+  box-shadow: 0 0 28px var(--commerce-glow);
+}
+.btn-commerce:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 44px var(--commerce-glow);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+}
+
+/* Stats row */
+.hero-stats {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-top: 60px;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   SECTION HEADERS
+   ============================================================ */
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding: 4px 14px;
+  border-radius: 999px;
+}
+
+.section-tag.science {
+  color: var(--science);
+  background: var(--science-dim);
+  border: 1px solid rgba(0,229,255,0.2);
+}
+
+.section-tag.commerce {
+  color: var(--commerce);
+  background: var(--commerce-dim);
+  border: 1px solid rgba(255,179,0,0.2);
+}
+
+.section-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+}
+
+.section-header p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   STREAM SECTIONS (Science / Commerce)
+   ============================================================ */
+.stream-section {
+  padding: 100px 40px;
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Faint side rule */
+.stream-section.science-stream::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 80px; bottom: 80px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--science), transparent);
+  opacity: 0.3;
+}
+
+.stream-section.commerce-stream::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 80px; bottom: 80px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--commerce), transparent);
+  opacity: 0.3;
+}
+
+/* Divider between streams */
+.stream-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border), transparent);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ── Class Tabs (11 / 12) ─────────────────────────────────── */
+.class-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 44px;
+  justify-content: center;
+}
+
+.tab-btn {
+  padding: 10px 28px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease);
+  letter-spacing: 0.3px;
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.tab-btn.active-science {
+  background: var(--science-dim);
+  color: var(--science);
+  border-color: rgba(0,229,255,0.4);
+  box-shadow: 0 0 16px var(--science-glow);
+}
+
+.tab-btn.active-commerce {
+  background: var(--commerce-dim);
+  color: var(--commerce);
+  border-color: rgba(255,179,0,0.4);
+  box-shadow: 0 0 16px var(--commerce-glow);
+}
+
+/* Class panels */
+.class-panel {
+  display: none;
+  animation: fadeUp 0.35s var(--ease) both;
+}
+
+.class-panel.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   SUBJECT CARDS GRID
+   ============================================================ */
+.subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.subject-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  display: block;
+}
+
+.subject-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  border-radius: inherit;
+}
+
+.subject-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+
+.subject-card:hover::before { opacity: 1; }
+
+/* Per-subject glow on hover */
+.subject-card[data-subject="physics"]:hover    { box-shadow: 0 16px 48px rgba(124,131,255,0.15); border-color: rgba(124,131,255,0.3); }
+.subject-card[data-subject="chemistry"]:hover  { box-shadow: 0 16px 48px rgba(255,107,157,0.15); border-color: rgba(255,107,157,0.3); }
+.subject-card[data-subject="biology"]:hover    { box-shadow: 0 16px 48px rgba(86,207,145,0.15);  border-color: rgba(86,207,145,0.3); }
+.subject-card[data-subject="maths"]:hover      { box-shadow: 0 16px 48px rgba(255,159,69,0.15);  border-color: rgba(255,159,69,0.3); }
+.subject-card[data-subject="accounts"]:hover   { box-shadow: 0 16px 48px rgba(78,205,196,0.15);  border-color: rgba(78,205,196,0.3); }
+.subject-card[data-subject="bst"]:hover        { box-shadow: 0 16px 48px rgba(199,125,255,0.15); border-color: rgba(199,125,255,0.3); }
+.subject-card[data-subject="economics"]:hover  { box-shadow: 0 16px 48px rgba(255,107,107,0.15); border-color: rgba(255,107,107,0.3); }
+
+.subject-icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  margin-bottom: 18px;
+}
+
+.subject-icon.physics    { background: rgba(124,131,255,0.15); }
+.subject-icon.chemistry  { background: rgba(255,107,157,0.15); }
+.subject-icon.biology    { background: rgba(86,207,145,0.15); }
+.subject-icon.maths      { background: rgba(255,159,69,0.15); }
+.subject-icon.accounts   { background: rgba(78,205,196,0.15); }
+.subject-icon.bst        { background: rgba(199,125,255,0.15); }
+.subject-icon.economics  { background: rgba(255,107,107,0.15); }
+
+.subject-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.subject-card p {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.subject-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.game-count {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.game-count.physics    { background: rgba(124,131,255,0.15); color: var(--physics); }
+.game-count.chemistry  { background: rgba(255,107,157,0.15); color: var(--chemistry); }
+.game-count.biology    { background: rgba(86,207,145,0.15);  color: var(--biology); }
+.game-count.maths      { background: rgba(255,159,69,0.15);  color: var(--maths); }
+.game-count.accounts   { background: rgba(78,205,196,0.15);  color: var(--accounts); }
+.game-count.bst        { background: rgba(199,125,255,0.15); color: var(--bst); }
+.game-count.economics  { background: rgba(255,107,107,0.15); color: var(--economics); }
+
+.card-arrow {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: all 0.2s var(--ease-spring);
+}
+
+.subject-card:hover .card-arrow {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  transform: translateX(3px);
+}
+
+/* Coming soon overlay */
+.subject-card.coming-soon {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.coming-badge {
+  position: absolute;
+  top: 16px; right: 16px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   PAGE HERO (inner pages)
+   ============================================================ */
+.page-hero {
+  padding: 120px 40px 60px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-hero .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.page-hero .breadcrumb a:hover { color: var(--text-secondary); }
+.page-hero .breadcrumb .sep { opacity: 0.4; }
+
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  margin-bottom: 14px;
+  line-height: 1.1;
+}
+
+.page-hero p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  max-width: 560px;
+}
+
+/* ============================================================
+   GAMES GRID (inner pages)
+   ============================================================ */
+.games-section {
+  padding: 0 40px 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.chapter-group {
+  margin-bottom: 56px;
+}
+
+.chapter-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.game-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.game-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+.game-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.game-card h4 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.game-card p {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.game-difficulty {
+  display: flex;
+  gap: 3px;
+}
+
+.difficulty-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.difficulty-dot.filled { background: var(--text-secondary); }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px;
+  text-align: center;
+}
+
+.footer-logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+footer p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+footer a {
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+footer a:hover { color: var(--text-primary); }
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.text-science  { color: var(--science); }
+.text-commerce { color: var(--commerce); }
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 20px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero {
+    padding: 90px 20px 50px;
+  }
+
+  .hero-stats {
+    gap: 24px;
+  }
+
+  .stream-section {
+    padding: 70px 20px;
+  }
+
+  .subjects-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page-hero {
+    padding: 100px 20px 40px;
+  }
+
+  .games-section {
+    padding: 0 20px 70px;
+  }
+
+  .games-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .subjects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h1 {
+    letter-spacing: -1px;
+  }
+
+  footer {
+    padding: 30px 20px;
+  }
+}

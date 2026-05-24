@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chemistry 11 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    /* ── Game Layout ── */
+    .game-wrapper {
+      min-height: 100vh;
+      padding: 100px 24px 60px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* ── Chapter Select Screen ── */
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeUp 0.4s ease both; }
+
+    .chapter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 32px;
+    }
+
+    .chapter-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.25s var(--ease);
+      text-align: left;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    .chapter-btn:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255,107,157,0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(255,107,157,0.1);
+    }
+
+    .chapter-btn .ch-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--chemistry);
+      margin-bottom: 8px;
+    }
+
+    .chapter-btn .ch-name {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    /* ── Loading Screen ── */
+    .loading-wrap {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .loading-spinner {
+      width: 56px; height: 56px;
+      border: 3px solid var(--border);
+      border-top-color: var(--chemistry);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 24px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-wrap h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+
+    .loading-wrap p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    /* ── Game Screen ── */
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+
+    .game-progress {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .game-progress span {
+      color: var(--chemistry);
+      font-weight: 700;
+    }
+
+    .game-score {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .game-score .score-num {
+      color: var(--chemistry);
+    }
+
+    .timer-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-circle {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 3px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 800;
+      transition: border-color 0.3s, color 0.3s;
+      position: relative;
+    }
+
+    .timer-circle.warning {
+      border-color: #ff9f45;
+      color: #ff9f45;
+    }
+
+    .timer-circle.danger {
+      border-color: #ff6b6b;
+      color: #ff6b6b;
+      animation: timerPulse 0.5s infinite alternate;
+    }
+
+    @keyframes timerPulse {
+      from { transform: scale(1); }
+      to   { transform: scale(1.1); }
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--chemistry), #ff9f45);
+      border-radius: 999px;
+      transition: width 0.4s var(--ease);
+    }
+
+    /* Question */
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .question-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--chemistry);
+      background: rgba(255,107,157,0.12);
+      border: 1px solid rgba(255,107,157,0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    .question-text {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.5;
+      letter-spacing: -0.3px;
+    }
+
+    /* Options */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      text-align: left;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: var(--bg-card-hover);
+      border-color: rgba(255,107,157,0.4);
+      transform: translateY(-2px);
+    }
+
+    .option-btn:disabled { cursor: not-allowed; }
+
+    .option-label {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .option-btn.correct {
+      background: rgba(86,207,145,0.1);
+      border-color: rgba(86,207,145,0.5);
+      animation: correctPop 0.4s var(--ease-spring);
+    }
+
+    .option-btn.correct .option-label {
+      background: var(--biology);
+      border-color: var(--biology);
+      color: #000;
+    }
+
+    .option-btn.wrong {
+      background: rgba(255,107,107,0.1);
+      border-color: rgba(255,107,107,0.5);
+      animation: wrongShake 0.4s ease;
+    }
+
+    .option-btn.wrong .option-label {
+      background: var(--economics);
+      border-color: var(--economics);
+      color: #fff;
+    }
+
+    @keyframes correctPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-6px); }
+      75%       { transform: translateX(6px); }
+    }
+
+    /* Explanation */
+    .explanation-box {
+      margin-top: 16px;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      display: none;
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .explanation-box.correct-exp {
+      background: rgba(86,207,145,0.08);
+      border: 1px solid rgba(86,207,145,0.2);
+      color: var(--biology);
+    }
+
+    .explanation-box.wrong-exp {
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.2);
+      color: #ff9999;
+    }
+
+    .next-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: var(--chemistry);
+      color: #000;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-spring);
+      display: none;
+    }
+
+    .next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,107,157,0.3);
+    }
+
+    /* ── Results Screen ── */
+    .results-wrap {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .results-emoji {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      animation: bounceIn 0.6s var(--ease-spring);
+    }
+
+    @keyframes bounceIn {
+      0%   { transform: scale(0); opacity: 0; }
+      60%  { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .results-wrap h2 {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+
+    .results-wrap .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+
+    .score-big {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      font-family: var(--font-display);
+      font-size: 5rem;
+      font-weight: 800;
+      color: var(--chemistry);
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .score-big .out-of {
+      font-size: 2rem;
+      color: var(--text-secondary);
+    }
+
+    .score-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 40px;
+    }
+
+    .results-stats {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .result-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px 28px;
+      min-width: 120px;
+    }
+
+    .result-stat .rs-num {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .result-stat .rs-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .results-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-retry {
+      padding: 14px 32px;
+      border-radius: 999px;
+      background: var(--chemistry);
+      color: #000;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-spring);
+    }
+
+    .btn-retry:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,107,157,0.3);
+    }
+
+    .btn-back {
+      padding: 14px 32px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.25s var(--ease);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-back:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+    }
+
+    /* ── Error box ── */
+    .error-box {
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.2);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-top: 20px;
+      font-size: 0.88rem;
+      color: #ff9999;
+      line-height: 1.6;
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .options-grid { grid-template-columns: 1fr; }
+      .score-big { font-size: 3.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+
+    <!-- ══ SCREEN 1: CHAPTER SELECT ══ -->
+    <div id="screen-select" class="screen active">
+      <div class="breadcrumb" style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a>
+        <span>/</span>
+        <a href="science-11.html" style="color:var(--text-muted);">Science 11</a>
+        <span>/</span>
+        <span style="color:var(--chemistry);">Chemistry MCQ Blitz</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(255,107,157,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">🧪</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Chemistry · Class 11 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+
+      <div class="chapter-grid" id="chapterGrid"></div>
+
+      <div class="error-box" id="errorBox">
+        ⚠️ <strong>Groq API Error.</strong> Using backup questions instead.<br>
+        <span id="errorMsg"></span>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN 2: LOADING ══ -->
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing Chapter content</p>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN 3: GAME ══ -->
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading question...</div>
+      </div>
+
+      <div class="options-grid" id="optionsGrid"></div>
+
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <!-- ══ SCREEN 4: RESULTS ══ -->
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+
+        <div class="score-big">
+          <span id="finalScore">0</span>
+          <span class="out-of">/ <span id="finalTotal">10</span></span>
+        </div>
+        <div class="score-label">CORRECT ANSWERS</div>
+
+        <div class="results-stats">
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div>
+            <div class="rs-label">Correct</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--economics)" id="statWrong">0</div>
+            <div class="rs-label">Wrong</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div>
+            <div class="rs-label">Score</div>
+          </div>
+        </div>
+
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-11.html" class="btn-back">← Back to Science 11</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /game-wrapper -->
+
+  <script src="../config.js"></script>
+  <script>
+    /* ══════════════════════════════════════════
+       CONFIG — PASTE YOUR GROQ KEY HERE
+    ══════════════════════════════════════════ */
+    const GROQ_API_KEY = CONFIG.GROQ_API_KEY;
+    const GROQ_MODEL   = 'llama-3.3-70b-versatile';
+
+    /* ══════════════════════════════════════════
+       CHAPTERS
+    ══════════════════════════════════════════ */
+    const CHAPTERS = [
+      { num: 1,  name: 'Some Basic Concepts of Chemistry' },
+      { num: 2,  name: 'Structure of Atom' },
+      { num: 3,  name: 'Classification of Elements & Periodicity' },
+      { num: 4,  name: 'Chemical Bonding & Molecular Structure' },
+      { num: 5,  name: 'Chemical Thermodynamics' },
+      { num: 6,  name: 'Equilibrium' },
+      { num: 7,  name: 'Redox Reactions' },
+      { num: 8,  name: 'Organic Chemistry: Basic Principles & Techniques' },
+      { num: 9,  name: 'Hydrocarbons' },
+    ];
+
+    /* ══════════════════════════════════════════
+       HARDCODED BACKUP QUESTIONS
+       (used if Groq fails)
+    ══════════════════════════════════════════ */
+    const BACKUP_QUESTIONS = {
+      1: [
+        { q: "What is the SI unit of amount of substance?", options: ["Gram", "Mole", "Kilogram", "Litre"], answer: 1, exp: "The mole is the SI unit for amount of substance. 1 mole = 6.022 × 10²³ particles (Avogadro's number)." },
+        { q: "Avogadro's number is approximately:", options: ["6.022 × 10²¹", "6.022 × 10²³", "6.022 × 10²⁵", "6.022 × 10²²"], answer: 1, exp: "Avogadro's number (Nₐ) = 6.022 × 10²³ mol⁻¹. It represents the number of particles in one mole." },
+        { q: "The mass of one mole of oxygen gas (O₂) is:", options: ["16 g", "32 g", "8 g", "24 g"], answer: 1, exp: "Molar mass of O₂ = 2 × 16 = 32 g/mol. The atomic mass of oxygen is 16 u." },
+        { q: "Which of the following is a pure substance?", options: ["Air", "Seawater", "Distilled water", "Milk"], answer: 2, exp: "Distilled water (H₂O) is a pure substance with a fixed composition. Air, seawater, and milk are mixtures." },
+        { q: "The empirical formula of glucose (C₆H₁₂O₆) is:", options: ["C₆H₁₂O₆", "CH₂O", "C₂H₄O₂", "CHO"], answer: 1, exp: "The empirical formula is the simplest whole number ratio. For glucose C:H:O = 6:12:6 = 1:2:1, so CH₂O." },
+        { q: "1 mole of any gas at STP occupies:", options: ["11.2 L", "22.4 L", "44.8 L", "2.24 L"], answer: 1, exp: "At STP (0°C, 1 atm), 1 mole of any ideal gas occupies 22.4 litres. This is the molar volume." },
+        { q: "The number of atoms in 1 mole of helium is:", options: ["3.011 × 10²³", "6.022 × 10²³", "12.044 × 10²³", "1.0 × 10²³"], answer: 1, exp: "1 mole of any element contains 6.022 × 10²³ atoms. Helium is monoatomic, so 1 mole = 6.022 × 10²³ atoms." },
+        { q: "Which law states that matter can neither be created nor destroyed?", options: ["Law of definite proportions", "Law of conservation of mass", "Law of multiple proportions", "Avogadro's law"], answer: 1, exp: "The Law of Conservation of Mass states that in a chemical reaction, total mass of reactants = total mass of products." },
+        { q: "The molecular formula of a compound with empirical formula CH₂ and molar mass 56 g/mol is:", options: ["CH₂", "C₂H₄", "C₄H₈", "C₃H₆"], answer: 2, exp: "Empirical formula mass of CH₂ = 14. Molar mass = 56. 56/14 = 4. So molecular formula = C₄H₈." },
+        { q: "Molarity is defined as:", options: ["Moles of solute per kg of solvent", "Moles of solute per litre of solution", "Mass of solute per litre of solution", "Moles of solute per mole of solvent"], answer: 1, exp: "Molarity (M) = moles of solute / volume of solution in litres. It is the most commonly used concentration unit." },
+      ],
+      2: [
+        { q: "The atom was first proposed by:", options: ["Rutherford", "Bohr", "Dalton", "Thomson"], answer: 2, exp: "John Dalton proposed the atomic theory in 1808. He stated that matter is made of indivisible atoms." },
+        { q: "The charge on an electron is:", options: ["+1.6 × 10⁻¹⁹ C", "-1.6 × 10⁻¹⁹ C", "-9.1 × 10⁻³¹ C", "+9.1 × 10⁻³¹ C"], answer: 1, exp: "The charge on an electron is -1.6 × 10⁻¹⁹ coulombs. Its mass is 9.1 × 10⁻³¹ kg." },
+        { q: "Rutherford's alpha particle scattering experiment led to the discovery of:", options: ["Electron", "Neutron", "Nucleus", "Proton"], answer: 2, exp: "Rutherford's gold foil experiment (1911) showed that atoms have a tiny, dense, positively charged nucleus." },
+        { q: "The principal quantum number (n) describes:", options: ["Shape of orbital", "Energy level and size", "Orientation of orbital", "Spin of electron"], answer: 1, exp: "The principal quantum number n describes the main energy level (shell) and the size of the orbital." },
+        { q: "The maximum number of electrons in the third shell (n=3) is:", options: ["8", "18", "32", "6"], answer: 1, exp: "Maximum electrons in a shell = 2n². For n=3: 2×3² = 18 electrons." },
+        { q: "Which quantum number determines the shape of an orbital?", options: ["Principal (n)", "Azimuthal (l)", "Magnetic (m)", "Spin (s)"], answer: 1, exp: "The azimuthal (angular momentum) quantum number l determines the shape of the orbital. l=0 is s, l=1 is p, l=2 is d." },
+        { q: "The Heisenberg Uncertainty Principle states that:", options: ["Electrons move in fixed orbits", "Position and momentum cannot both be determined precisely", "Atoms are indivisible", "Electrons have definite energy"], answer: 1, exp: "Heisenberg's principle: Δx × Δp ≥ h/4π. We cannot simultaneously know exact position and momentum of an electron." },
+        { q: "The electronic configuration of Na (Z=11) is:", options: ["2,8,1", "2,9", "2,8,3", "2,7,2"], answer: 0, exp: "Sodium has 11 electrons: 1s² 2s² 2p⁶ 3s¹ = 2, 8, 1. It has 1 valence electron in the 3rd shell." },
+        { q: "Which model introduced the concept of stationary orbits?", options: ["Thomson's model", "Rutherford's model", "Bohr's model", "Dalton's model"], answer: 2, exp: "Bohr's model (1913) introduced stationary orbits where electrons move without radiating energy." },
+        { q: "An orbital can hold a maximum of:", options: ["1 electron", "2 electrons", "6 electrons", "8 electrons"], answer: 1, exp: "According to Pauli's Exclusion Principle, each orbital can hold a maximum of 2 electrons with opposite spins." },
+      ],
+      3: [
+        { q: "The modern periodic table is based on:", options: ["Atomic mass", "Atomic number", "Valency", "Density"], answer: 1, exp: "The modern periodic table arranges elements by increasing atomic number (number of protons), proposed by Moseley." },
+        { q: "Elements in the same group have the same:", options: ["Atomic mass", "Number of electrons", "Valence electrons", "Atomic number"], answer: 2, exp: "Elements in the same group have the same number of valence electrons, giving them similar chemical properties." },
+        { q: "Atomic radius generally ___ across a period from left to right:", options: ["Increases", "Decreases", "Stays same", "First increases then decreases"], answer: 1, exp: "Across a period, atomic radius decreases due to increasing nuclear charge pulling electrons closer to the nucleus." },
+        { q: "Which of the following has the highest electronegativity?", options: ["Oxygen", "Chlorine", "Fluorine", "Nitrogen"], answer: 2, exp: "Fluorine is the most electronegative element (3.98 on Pauling scale). Electronegativity increases up and to the right in periodic table." },
+        { q: "Ionization energy generally increases:", options: ["Down a group", "Across a period left to right", "With atomic size", "With metallic character"], answer: 1, exp: "Ionization energy increases across a period because nuclear charge increases, making it harder to remove an electron." },
+        { q: "The s-block elements include:", options: ["Groups 3-12", "Groups 1 and 2", "Groups 13-18", "Lanthanides"], answer: 1, exp: "s-block elements are Groups 1 (alkali metals) and 2 (alkaline earth metals). Their valence electrons are in s orbitals." },
+        { q: "Noble gases are placed in group:", options: ["1", "7", "17", "18"], answer: 3, exp: "Noble gases (He, Ne, Ar, Kr, Xe, Rn) are in Group 18. They have completely filled valence shells and are very unreactive." },
+        { q: "Electron affinity is the energy change when:", options: ["An atom loses an electron", "An atom gains an electron", "Two atoms bond", "An atom is ionized"], answer: 1, exp: "Electron affinity is the enthalpy change when a neutral gaseous atom gains an electron to form a negative ion." },
+        { q: "Which period contains elements with electrons filling 3d orbitals?", options: ["Period 2", "Period 3", "Period 4", "Period 5"], answer: 2, exp: "Period 4 contains the first row of d-block (transition) elements where 3d orbitals are being filled (Sc to Zn)." },
+        { q: "Metallic character in the periodic table:", options: ["Increases left to right", "Increases down a group", "Increases up a group", "Increases right to left in a period only"], answer: 1, exp: "Metallic character increases down a group (more electron shells, easier to lose electrons) and decreases across a period." },
+      ],
+      4: [
+        { q: "A covalent bond is formed by:", options: ["Transfer of electrons", "Sharing of electrons", "Electrostatic attraction", "Metallic bonding"], answer: 1, exp: "Covalent bonds form when atoms share electron pairs. This typically occurs between non-metal atoms." },
+        { q: "The hybridization of carbon in methane (CH₄) is:", options: ["sp", "sp²", "sp³", "sp³d"], answer: 2, exp: "In methane, carbon forms 4 identical C-H bonds. It undergoes sp³ hybridization with tetrahedral geometry (109.5°)." },
+        { q: "VSEPR theory predicts the shape of molecules based on:", options: ["Bond lengths", "Repulsion between electron pairs", "Atomic radii", "Electronegativity"], answer: 1, exp: "VSEPR (Valence Shell Electron Pair Repulsion) theory predicts shape by minimizing repulsion between electron pairs." },
+        { q: "The shape of water (H₂O) molecule is:", options: ["Linear", "Trigonal planar", "Tetrahedral", "Bent/V-shaped"], answer: 3, exp: "Water has 2 bond pairs and 2 lone pairs. Lone pair repulsion makes it V-shaped/bent with bond angle ~104.5°." },
+        { q: "A coordinate (dative) bond is formed when:", options: ["Both atoms share electrons equally", "One atom donates both electrons", "Electrons are transferred", "Ionic attraction occurs"], answer: 1, exp: "A coordinate bond (dative covalent) forms when one atom donates both electrons to form the shared pair, e.g., in NH₄⁺." },
+        { q: "Which of the following is a polar molecule?", options: ["CO₂", "BF₃", "CCl₄", "HCl"], answer: 3, exp: "HCl is polar because chlorine is more electronegative than hydrogen, creating a net dipole moment." },
+        { q: "Bond order of O₂ according to MOT is:", options: ["1", "2", "3", "2.5"], answer: 1, exp: "For O₂: Bond order = (8-4)/2 = 2. This means O₂ has a double bond and is paramagnetic (2 unpaired electrons)." },
+        { q: "Hydrogen bonding is strongest in:", options: ["HCl", "HI", "HF", "HBr"], answer: 2, exp: "HF has the strongest hydrogen bonding because fluorine is the most electronegative element with highest charge density." },
+        { q: "The geometry of BF₃ is:", options: ["Trigonal pyramidal", "Trigonal planar", "Tetrahedral", "Linear"], answer: 1, exp: "BF₃ has 3 bond pairs and 0 lone pairs. According to VSEPR, it is trigonal planar with 120° bond angles." },
+        { q: "Sigma (σ) bonds are formed by:", options: ["Lateral overlap", "Head-on overlap", "Side-on overlap", "No overlap"], answer: 1, exp: "Sigma bonds are formed by head-on (axial) overlap of orbitals. They are stronger than pi bonds and allow free rotation." },
+      ],
+      5: [
+        { q: "The branch of chemistry dealing with heat changes in reactions is:", options: ["Kinetics", "Thermodynamics", "Electrochemistry", "Photochemistry"], answer: 1, exp: "Chemical thermodynamics studies energy changes (heat, work) in chemical reactions and processes." },
+        { q: "An exothermic reaction has:", options: ["ΔH > 0", "ΔH < 0", "ΔH = 0", "ΔS = 0"], answer: 1, exp: "Exothermic reactions release heat, so ΔH is negative (ΔH < 0). Examples: combustion, neutralization." },
+        { q: "The standard enthalpy of formation of an element in its standard state is:", options: ["Positive", "Negative", "Zero", "Cannot be determined"], answer: 2, exp: "By convention, the standard enthalpy of formation (ΔfH°) of elements in their standard states is defined as zero." },
+        { q: "Hess's Law states that:", options: ["Enthalpy depends on path", "Enthalpy is independent of path", "Entropy is always positive", "Gibbs energy is zero at equilibrium"], answer: 1, exp: "Hess's Law: Total enthalpy change is the same regardless of the path taken. It's based on conservation of energy." },
+        { q: "Internal energy (U) is a:", options: ["Path function", "State function", "Intensive property", "Neither"], answer: 1, exp: "Internal energy is a state function — its value depends only on the current state, not on how the state was reached." },
+        { q: "At constant pressure, heat change equals:", options: ["ΔU", "ΔH", "ΔG", "ΔS"], answer: 1, exp: "At constant pressure, the heat exchanged equals the change in enthalpy (ΔH = qp). This is why ΔH is called heat of reaction." },
+        { q: "The first law of thermodynamics states:", options: ["Entropy increases", "Energy is conserved", "Gibbs energy decreases", "Heat flows from cold to hot"], answer: 1, exp: "First law: Energy cannot be created or destroyed. ΔU = q + w (change in internal energy = heat + work done on system)." },
+        { q: "A spontaneous process has:", options: ["ΔG > 0", "ΔG < 0", "ΔG = 0", "ΔH = 0"], answer: 1, exp: "A spontaneous process has negative Gibbs free energy change (ΔG < 0). ΔG = ΔH - TΔS." },
+        { q: "The enthalpy change for the reaction C(s) + O₂(g) → CO₂(g) is called:", options: ["Enthalpy of formation", "Enthalpy of combustion", "Both A and B", "Enthalpy of atomization"], answer: 2, exp: "This reaction is both the standard enthalpy of formation of CO₂ AND the enthalpy of combustion of carbon." },
+        { q: "Entropy is a measure of:", options: ["Energy", "Disorder or randomness", "Temperature", "Pressure"], answer: 1, exp: "Entropy (S) is a measure of disorder or randomness in a system. Higher disorder = higher entropy." },
+      ],
+      6: [
+        { q: "At chemical equilibrium:", options: ["Reaction stops", "Forward and backward rates are equal", "Concentration of products is zero", "Temperature changes"], answer: 1, exp: "At equilibrium, the rate of forward reaction equals rate of reverse reaction. Concentrations remain constant but not equal." },
+        { q: "Le Chatelier's Principle states that:", options: ["Equilibrium cannot be disturbed", "A system at equilibrium shifts to counteract a disturbance", "Temperature has no effect on equilibrium", "Pressure only affects gaseous equilibria"], answer: 1, exp: "Le Chatelier's Principle: If a system at equilibrium is disturbed, it shifts in the direction that opposes the change." },
+        { q: "For the reaction N₂ + 3H₂ ⇌ 2NH₃, increasing pressure will:", options: ["Shift equilibrium left", "Shift equilibrium right", "Have no effect", "Stop the reaction"], answer: 1, exp: "Increasing pressure shifts equilibrium towards the side with fewer moles of gas. Left has 4 moles, right has 2 moles, so it shifts right." },
+        { q: "The equilibrium constant Kc depends on:", options: ["Concentration of reactants", "Temperature only", "Pressure", "Catalyst"], answer: 1, exp: "Kc depends only on temperature. Changing concentration, pressure, or adding a catalyst does not change Kc." },
+        { q: "A strong acid is one that:", options: ["Has high molecular weight", "Completely dissociates in water", "Partially dissociates", "Does not react with bases"], answer: 1, exp: "Strong acids (HCl, HNO₃, H₂SO₄) completely dissociate in water. Weak acids only partially dissociate." },
+        { q: "pH of a neutral solution at 25°C is:", options: ["0", "7", "14", "1"], answer: 1, exp: "At 25°C, neutral solution has [H⁺] = [OH⁻] = 10⁻⁷ M. pH = -log[H⁺] = -log(10⁻⁷) = 7." },
+        { q: "A buffer solution resists changes in:", options: ["Temperature", "pH", "Pressure", "Concentration"], answer: 1, exp: "A buffer solution (weak acid + its salt, or weak base + its salt) resists changes in pH when small amounts of acid or base are added." },
+        { q: "The conjugate base of H₂O is:", options: ["H₃O⁺", "OH⁻", "H₂O₂", "O²⁻"], answer: 1, exp: "When H₂O donates a proton (H⁺), it becomes OH⁻. So OH⁻ is the conjugate base of H₂O." },
+        { q: "Kw (ionic product of water) at 25°C is:", options: ["10⁻⁷", "10⁻¹⁴", "10⁻⁷", "1"], answer: 1, exp: "Kw = [H⁺][OH⁻] = 10⁻¹⁴ at 25°C. This means in pure water, [H⁺] = [OH⁻] = 10⁻⁷ M." },
+        { q: "Common ion effect causes:", options: ["Increased solubility", "Decreased solubility", "No change", "Increased ionization"], answer: 1, exp: "The common ion effect decreases the solubility of a sparingly soluble salt when a common ion is added to the solution." },
+      ],
+      7: [
+        { q: "Oxidation is defined as:", options: ["Gain of electrons", "Loss of electrons", "Gain of protons", "Loss of protons"], answer: 1, exp: "Oxidation = Loss of electrons (remember OIL RIG: Oxidation Is Loss, Reduction Is Gain)." },
+        { q: "In the reaction Zn + CuSO₄ → ZnSO₄ + Cu, zinc is:", options: ["Oxidized", "Reduced", "Neither", "Both"], answer: 0, exp: "Zinc loses electrons (Zn → Zn²⁺ + 2e⁻), so it is oxidized. Zinc is the reducing agent." },
+        { q: "The oxidation state of oxygen in H₂O₂ is:", options: ["-2", "-1", "0", "+1"], answer: 1, exp: "In H₂O₂ (hydrogen peroxide), the oxidation state of oxygen is -1 (unusual). In most compounds it is -2." },
+        { q: "A reducing agent is a substance that:", options: ["Gains electrons", "Loses electrons", "Gains protons", "Loses neutrons"], answer: 1, exp: "A reducing agent loses electrons (gets oxidized itself) and causes reduction in other substances." },
+        { q: "The oxidation state of Mn in KMnO₄ is:", options: ["+4", "+6", "+7", "+5"], answer: 2, exp: "In KMnO₄: K is +1, O is -2 (×4 = -8). So K + Mn + 4O = 0 → 1 + Mn - 8 = 0 → Mn = +7." },
+        { q: "Disproportionation reaction involves:", options: ["Only oxidation", "Only reduction", "Both oxidation and reduction of same element", "Neither"], answer: 2, exp: "In disproportionation, the same element is simultaneously oxidized and reduced. Example: 2H₂O₂ → 2H₂O + O₂." },
+        { q: "The stock notation Fe(III) means iron has oxidation state:", options: ["+1", "+2", "+3", "+4"], answer: 2, exp: "Stock notation uses Roman numerals in parentheses to indicate oxidation state. Fe(III) means iron has +3 oxidation state." },
+        { q: "In electrolysis, reduction occurs at the:", options: ["Anode", "Cathode", "Both electrodes", "Electrolyte"], answer: 1, exp: "At cathode: reduction occurs (cations gain electrons). At anode: oxidation occurs (anions lose electrons)." },
+        { q: "The oxidation state of sulphur in SO₄²⁻ is:", options: ["+4", "+6", "-2", "+2"], answer: 1, exp: "In SO₄²⁻: O is -2 (×4 = -8), overall charge = -2. So S - 8 = -2 → S = +6." },
+        { q: "Which of the following is a redox reaction?", options: ["NaOH + HCl → NaCl + H₂O", "AgNO₃ + NaCl → AgCl + NaNO₃", "2Mg + O₂ → 2MgO", "BaCl₂ + Na₂SO₄ → BaSO₄ + 2NaCl"], answer: 2, exp: "2Mg + O₂ → 2MgO is a redox reaction. Mg is oxidized (0 to +2) and O₂ is reduced (0 to -2)." },
+      ],
+      8: [
+        { q: "Which of the following is a functional group of alcohols?", options: ["-CHO", "-OH", "-COOH", "-NH₂"], answer: 1, exp: "The hydroxyl group (-OH) is the functional group of alcohols. -CHO is aldehyde, -COOH is carboxylic acid, -NH₂ is amine." },
+        { q: "Homolytic fission of a covalent bond produces:", options: ["Ions", "Free radicals", "Carbocations", "Carbanions"], answer: 1, exp: "Homolytic fission: each atom gets one electron from the shared pair, producing free radicals (neutral species with unpaired electrons)." },
+        { q: "The IUPAC name of CH₃-CH₂-OH is:", options: ["Methanol", "Ethanol", "Propanol", "Butanol"], answer: 1, exp: "CH₃-CH₂-OH has 2 carbon atoms with an -OH group. IUPAC name: ethanol (eth = 2 carbons, -ol = alcohol)." },
+        { q: "Inductive effect is related to:", options: ["Resonance", "Electron displacement through σ bonds", "Electron displacement through π bonds", "Free radical formation"], answer: 1, exp: "The inductive effect is the displacement of electrons through σ bonds due to electronegativity differences between atoms." },
+        { q: "A nucleophile is a species that:", options: ["Attacks electron-rich sites", "Donates electrons", "Accepts electrons", "Has positive charge only"], answer: 1, exp: "A nucleophile (nucleus-loving) is electron-rich species that donates electrons to electrophiles. Examples: OH⁻, NH₃, CN⁻." },
+        { q: "The general formula of alkanes is:", options: ["CₙH₂ₙ", "CₙH₂ₙ₊₂", "CₙH₂ₙ₋₂", "CₙHₙ"], answer: 1, exp: "Alkanes have general formula CₙH₂ₙ₊₂. They are saturated hydrocarbons with only single bonds." },
+        { q: "Resonance structures differ in:", options: ["Atomic positions", "Positions of electrons", "Molecular formula", "Atomic masses"], answer: 1, exp: "Resonance structures have the same atomic positions but differ in the arrangement of electrons (delocalized electrons)." },
+        { q: "Electrophiles are:", options: ["Electron donors", "Electron acceptors", "Neutral species", "Free radicals only"], answer: 1, exp: "Electrophiles (electron-loving) are electron-deficient species that accept electrons. Examples: H⁺, Br₂, AlCl₃." },
+        { q: "The suffix '-yne' in IUPAC nomenclature indicates:", options: ["Single bond", "Double bond", "Triple bond", "Aromatic ring"], answer: 2, exp: "In IUPAC nomenclature: -ane = single bond, -ene = double bond, -yne = triple bond." },
+        { q: "Hyperconjugation involves delocalization of electrons from:", options: ["π bond to π* orbital", "σ C-H bond to adjacent π* orbital", "Lone pair to σ* orbital", "d orbitals"], answer: 1, exp: "Hyperconjugation involves delocalization of σ C-H bonding electrons into adjacent empty or π* antibonding orbitals." },
+      ],
+      9: [
+        { q: "Hydrocarbons containing only single bonds are called:", options: ["Alkenes", "Alkynes", "Alkanes", "Arenes"], answer: 2, exp: "Alkanes contain only C-C and C-H single bonds. They are saturated hydrocarbons with general formula CₙH₂ₙ₊₂." },
+        { q: "The IUPAC name of CH₂=CH₂ is:", options: ["Ethane", "Ethene", "Ethyne", "Methane"], answer: 1, exp: "CH₂=CH₂ has 2 carbons and a double bond. IUPAC name: ethene (also called ethylene). General suffix for alkenes is -ene." },
+        { q: "Benzene has the molecular formula:", options: ["C₆H₁₂", "C₆H₆", "C₆H₁₄", "C₆H₁₀"], answer: 1, exp: "Benzene (C₆H₆) is an aromatic compound with a ring of 6 carbon atoms and delocalized π electrons." },
+        { q: "The reaction of alkenes with HBr follows:", options: ["Markovnikov's rule", "Anti-Markovnikov's rule", "Hess's law", "Le Chatelier's principle"], answer: 0, exp: "Markovnikov's rule: In addition of HX to alkene, H adds to the carbon with more hydrogens, X adds to less substituted carbon." },
+        { q: "Which of the following is an aromatic compound?", options: ["Cyclohexane", "Cyclohexene", "Benzene", "Hexane"], answer: 2, exp: "Benzene is aromatic — it has a planar ring, (4n+2) π electrons (n=1, so 6 π electrons), and follows Hückel's rule." },
+        { q: "Alkynes contain:", options: ["One double bond", "Two double bonds", "One triple bond", "Only single bonds"], answer: 2, exp: "Alkynes contain one C≡C triple bond. General formula: CₙH₂ₙ₋₂. Simplest alkyne: ethyne (HC≡CH)." },
+        { q: "The process of converting alkenes to alkanes by adding H₂ is called:", options: ["Oxidation", "Hydrogenation", "Halogenation", "Dehydration"], answer: 1, exp: "Hydrogenation: addition of H₂ to an alkene in presence of catalyst (Ni, Pt, Pd) to form alkane. CₙH₂ₙ + H₂ → CₙH₂ₙ₊₂." },
+        { q: "Methane undergoes primarily:", options: ["Addition reactions", "Substitution reactions", "Elimination reactions", "Rearrangement reactions"], answer: 1, exp: "Alkanes (including methane) undergo free radical substitution reactions (e.g., with Cl₂ or Br₂ in presence of UV light)." },
+        { q: "The number of sigma bonds in ethyne (HC≡CH) is:", options: ["2", "3", "4", "5"], answer: 1, exp: "In HC≡CH: H-C (1 sigma) + C≡C (1 sigma + 2 pi) + C-H (1 sigma) = 3 sigma bonds and 2 pi bonds." },
+        { q: "Cracking of hydrocarbons means:", options: ["Combining smaller molecules", "Breaking larger molecules into smaller ones", "Adding halogens", "Removing hydrogen"], answer: 1, exp: "Cracking is the process of breaking down larger hydrocarbon molecules into smaller, more useful ones using heat or catalyst." },
+      ],
+    };
+
+    /* ══════════════════════════════════════════
+       STATE
+    ══════════════════════════════════════════ */
+    let currentChapter = null;
+    let questions      = [];
+    let currentQ       = 0;
+    let score          = 0;
+    let timer          = null;
+    let timeLeft       = 20;
+    let answered       = false;
+
+    /* ══════════════════════════════════════════
+       INIT
+    ══════════════════════════════════════════ */
+    function init() {
+      const grid = document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = 'chapter-btn';
+        btn.innerHTML = `<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick = () => startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    /* ══════════════════════════════════════════
+       START GAME
+    ══════════════════════════════════════════ */
+    async function startGame(chapter) {
+      currentChapter = chapter;
+      score = 0;
+      currentQ = 0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent = `Chapter ${chapter.num}: ${chapter.name}`;
+
+      questions = await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    /* ══════════════════════════════════════════
+       FETCH QUESTIONS (Groq → fallback)
+    ══════════════════════════════════════════ */
+    async function fetchQuestions(chapter) {
+  try {
+    const res = await fetch('/.netlify/functions/ask-groq', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chapter: chapter.num,
+        chapterName: chapter.name,
+        subject: 'Chemistry',
+        classNum: '11'
+      })
+    });
+
+    const data = await res.json();
+    if (data.questions && data.questions.length >= 5) {
+      return data.questions;
+    }
+    throw new Error('Invalid response');
+
+  } catch (err) {
+    console.warn('Function failed, using backup:', err);
+    showError(`Using backup questions. (${err.message})`);
+    return getBackup(chapter.num);
+  }
+}
+    /* ══════════════════════════════════════════
+       TIMER
+    ══════════════════════════════════════════ */
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 20;
+      updateTimerDisplay();
+
+      timer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          timeUp();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('timerCircle');
+      el.textContent = timeLeft;
+      el.className = 'timer-circle';
+      if (timeLeft <= 5)       el.classList.add('danger');
+      else if (timeLeft <= 10) el.classList.add('warning');
+    }
+
+    function timeUp() {
+      if (answered) return;
+      answered = true;
+      revealAnswer(-1); // -1 means time's up, no selection
+    }
+
+    /* ══════════════════════════════════════════
+       SELECT ANSWER
+    ══════════════════════════════════════════ */
+    function selectAnswer(idx) {
+      if (answered) return;
+      answered = true;
+      clearInterval(timer);
+      revealAnswer(idx);
+    }
+
+    function revealAnswer(selected) {
+      const q = questions[currentQ];
+      const btns = document.querySelectorAll('.option-btn');
+      const isCorrect = selected === q.answer;
+
+      if (isCorrect) score++;
+
+      btns.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.answer)              btn.classList.add('correct');
+        else if (i === selected)         btn.classList.add('wrong');
+      });
+
+      // Show explanation
+      const expBox = document.getElementById('explanationBox');
+      expBox.style.display = 'block';
+      expBox.className = `explanation-box ${isCorrect ? 'correct-exp' : 'wrong-exp'}`;
+      expBox.innerHTML = isCorrect
+        ? `✅ <strong>Correct!</strong> ${q.exp}`
+        : `❌ <strong>${selected === -1 ? "Time's up!" : 'Wrong.'}</strong> Correct answer: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+
+      document.getElementById('nextBtn').style.display = 'block';
+      document.getElementById('scoreDisplay').textContent = score;
+    }
+
+    /* ══════════════════════════════════════════
+       NEXT QUESTION
+    ══════════════════════════════════════════ */
+    function nextQuestion() {
+      currentQ++;
+      loadQuestion();
+    }
+
+    /* ══════════════════════════════════════════
+       RESULTS
+    ══════════════════════════════════════════ */
+    function showResults() {
+      clearInterval(timer);
+      const total   = questions.length;
+      const wrong   = total - score;
+      const percent = Math.round((score / total) * 100);
+
+      document.getElementById('finalScore').textContent   = score;
+      document.getElementById('finalTotal').textContent   = total;
+      document.getElementById('statCorrect').textContent  = score;
+      document.getElementById('statWrong').textContent    = wrong;
+      document.getElementById('statPercent').textContent  = percent + '%';
+
+      let emoji, title, subtitle;
+      if (percent === 100)     { emoji = '🏆'; title = 'Perfect Score!';    subtitle = 'Absolute legend. 100% correct!'; }
+      else if (percent >= 80)  { emoji = '🎉'; title = 'Excellent!';        subtitle = 'You really know your chemistry!'; }
+      else if (percent >= 60)  { emoji = '👍'; title = 'Good job!';         subtitle = 'Solid performance. Keep it up!'; }
+      else if (percent >= 40)  { emoji = '📚'; title = 'Keep Studying!';    subtitle = 'Review the chapter and try again.'; }
+      else                     { emoji = '💪'; title = 'Don\'t Give Up!';   subtitle = 'Chemistry takes practice. Try again!'; }
+
+      document.getElementById('resultsEmoji').textContent    = emoji;
+      document.getElementById('resultsTitle').textContent    = title;
+      document.getElementById('resultsSubtitle').textContent = subtitle;
+
+      document.getElementById('progressBar').style.width = '100%';
+      showScreen('screen-results');
+    }
+
+    /* ══════════════════════════════════════════
+       RETRY
+    ══════════════════════════════════════════ */
+    function retryGame() {
+      startGame(currentChapter);
+    }
+
+    /* ══════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════ */
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      document.getElementById('errorMsg').textContent = msg;
+      box.style.display = 'block';
+    }
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    /* ── Start ── */
+    init();
+  </script>
+
+</body>
+</html>

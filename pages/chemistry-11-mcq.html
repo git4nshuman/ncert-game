@@ -768,7 +768,7 @@
 
       questions = await fetchQuestions(chapter);
       showScreen('screen-game');
-      loadQuestion();
+      setTimeout(loadQuestion, 100);
     }
 
     /* ══════════════════════════════════════════

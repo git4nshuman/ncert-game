@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics 11 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(124,131,255,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(124,131,255,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--physics); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--physics); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--physics); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--physics); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--physics),#00e5ff); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--physics); background:rgba(124,131,255,0.12); border:1px solid rgba(124,131,255,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(124,131,255,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--physics); color:#fff; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,131,255,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--physics); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--physics); color:#fff; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,131,255,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+
+    <!-- SCREEN 1: CHAPTER SELECT -->
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a>
+        <span>/</span>
+        <a href="science-11.html" style="color:var(--text-muted);">Science 11</a>
+        <span>/</span>
+        <span style="color:var(--physics);">Physics MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(124,131,255,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">⚡</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Physics · Class 11 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <!-- SCREEN 2: LOADING -->
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: GAME -->
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <!-- SCREEN 4: RESULTS -->
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big">
+          <span id="finalScore">0</span>
+          <span class="out-of">/ <span id="finalTotal">10</span></span>
+        </div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div>
+            <div class="rs-label">Correct</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--economics)" id="statWrong">0</div>
+            <div class="rs-label">Wrong</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div>
+            <div class="rs-label">Score</div>
+          </div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-11.html" class="btn-back">← Back to Science 11</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      { num:1,  name:'Physical World & Measurement' },
+      { num:2,  name:'Kinematics' },
+      { num:3,  name:'Laws of Motion' },
+      { num:4,  name:'Work, Energy & Power' },
+      { num:5,  name:'Motion of System of Particles & Rigid Body' },
+      { num:6,  name:'Gravitation' },
+      { num:7,  name:'Properties of Bulk Matter' },
+      { num:8,  name:'Thermodynamics' },
+      { num:9,  name:'Kinetic Theory' },
+      { num:10, name:'Oscillations & Waves' },
+    ];
+
+    const BACKUP = {
+      1:[
+        {q:"Physics is a branch of science that deals with:",options:["Living organisms","Matter, energy and their interactions","Chemical reactions","Celestial bodies only"],answer:1,exp:"Physics studies matter, energy, and the fundamental forces of nature and their interactions."},
+        {q:"Which of the following is a fundamental unit?",options:["Newton","Joule","Kilogram","Pascal"],answer:2,exp:"Kilogram (kg) is a fundamental/base SI unit of mass. Newton, Joule and Pascal are derived units."},
+        {q:"The SI unit of time is:",options:["Minute","Hour","Second","Millisecond"],answer:2,exp:"The second (s) is the SI base unit of time."},
+        {q:"Dimensional formula of velocity is:",options:["[MLT⁻¹]","[LT⁻¹]","[MLT]","[L²T⁻¹]"],answer:1,exp:"Velocity = distance/time = L/T = [LT⁻¹]. Mass is not involved."},
+        {q:"Which method is used to check dimensional correctness?",options:["Principle of superposition","Principle of homogeneity","Bernoulli's principle","Archimedes' principle"],answer:1,exp:"Principle of homogeneity: dimensions on both sides of equation must be equal."},
+        {q:"The number of significant figures in 0.00340 is:",options:["5","3","6","2"],answer:1,exp:"0.00340 has 3 significant figures: 3, 4, and the trailing zero after decimal."},
+        {q:"Light year is a unit of:",options:["Time","Speed","Distance","Energy"],answer:2,exp:"Light year is the distance light travels in one year ≈ 9.46 × 10¹⁵ metres."},
+        {q:"Error in measurement is:",options:["Always avoidable","Uncertainty in measurement","Always systematic","Always random"],answer:1,exp:"Error in measurement refers to the uncertainty or deviation from the true value."},
+        {q:"Which of the following has no dimensions?",options:["Force","Strain","Velocity","Power"],answer:1,exp:"Strain = change in length/original length. Both are lengths so it's dimensionless."},
+        {q:"Parsec is a unit of:",options:["Time","Mass","Distance","Pressure"],answer:2,exp:"Parsec is a unit of astronomical distance. 1 parsec ≈ 3.086 × 10¹⁶ metres."},
+      ],
+      2:[
+        {q:"A body is said to be in uniform motion if:",options:["It moves in a straight line","It covers equal distances in equal intervals of time","Its acceleration is constant","Its velocity is changing"],answer:1,exp:"Uniform motion means equal distances in equal time intervals — constant speed in a straight line."},
+        {q:"The slope of a distance-time graph gives:",options:["Acceleration","Displacement","Speed","Force"],answer:2,exp:"Slope of distance-time graph = distance/time = speed."},
+        {q:"A particle thrown horizontally from a height is an example of:",options:["Uniform motion","Simple harmonic motion","Projectile motion","Circular motion"],answer:2,exp:"Horizontal throw is projectile motion — combination of horizontal uniform motion and vertical free fall."},
+        {q:"The area under a velocity-time graph gives:",options:["Speed","Acceleration","Displacement","Distance"],answer:2,exp:"Area under v-t graph = velocity × time = displacement."},
+        {q:"For a freely falling body, acceleration is:",options:["Zero","9.8 m/s² upward","9.8 m/s² downward","Variable"],answer:2,exp:"Free fall acceleration due to gravity g = 9.8 m/s² directed downward."},
+        {q:"Range of a projectile is maximum at angle:",options:["30°","45°","60°","90°"],answer:1,exp:"Range R = u²sin2θ/g. Maximum when sin2θ = 1, i.e. 2θ = 90°, θ = 45°."},
+        {q:"Relative velocity of two bodies moving in same direction:",options:["Sum of velocities","Difference of velocities","Product of velocities","Zero always"],answer:1,exp:"When moving in same direction, relative velocity = difference of their velocities."},
+        {q:"A scalar quantity has:",options:["Magnitude and direction","Only magnitude","Only direction","Neither magnitude nor direction"],answer:1,exp:"Scalar quantities have only magnitude, no direction. Examples: mass, speed, temperature."},
+        {q:"The velocity of a body at any instant is called:",options:["Average velocity","Uniform velocity","Instantaneous velocity","Relative velocity"],answer:2,exp:"Instantaneous velocity is the velocity at a specific instant of time, v = dx/dt."},
+        {q:"Acceleration due to gravity on moon is approximately:",options:["9.8 m/s²","1.6 m/s²","3.7 m/s²","0 m/s²"],answer:1,exp:"Acceleration due to gravity on moon ≈ 1.6 m/s², about 1/6th of Earth's gravity."},
+      ],
+      3:[
+        {q:"Newton's first law of motion is also called:",options:["Law of acceleration","Law of inertia","Law of action-reaction","Law of gravitation"],answer:1,exp:"Newton's first law (body stays at rest or uniform motion unless acted upon) is called law of inertia."},
+        {q:"The SI unit of force is:",options:["Dyne","Joule","Newton","Pascal"],answer:2,exp:"The SI unit of force is Newton (N). 1 N = 1 kg⋅m/s²."},
+        {q:"Newton's second law states F =:",options:["mv","ma","mv²","m/a"],answer:1,exp:"Newton's second law: F = ma. Force equals mass times acceleration."},
+        {q:"Action and reaction forces act on:",options:["Same body","Different bodies","Same point","Same direction"],answer:1,exp:"Newton's third law: action and reaction are equal and opposite, acting on DIFFERENT bodies."},
+        {q:"Inertia of a body depends on its:",options:["Volume","Velocity","Mass","Shape"],answer:2,exp:"Inertia is the resistance to change in state of motion. It depends on mass — greater mass = greater inertia."},
+        {q:"A rocket works on the principle of:",options:["Newton's first law","Newton's second law","Newton's third law","Law of gravitation"],answer:2,exp:"Rocket expels gas backward (action), rocket moves forward (reaction) — Newton's third law."},
+        {q:"Impulse is equal to:",options:["Force × distance","Change in momentum","Mass × velocity","Force × acceleration"],answer:1,exp:"Impulse = F × t = change in momentum (Δp). It's the effect of force over time."},
+        {q:"When a horse pulls a cart, the cart moves because:",options:["Horse pulls cart harder than cart pulls horse","Ground pushes horse forward","Cart pushes horse backward","Friction acts backward on cart"],answer:1,exp:"Ground pushes horse forward (reaction to horse pushing ground backward). This net force moves the system."},
+        {q:"The apparent weight of a person in a lift moving downward with acceleration a is:",options:["m(g+a)","m(g-a)","mg","ma"],answer:1,exp:"In downward acceleration, apparent weight = m(g-a). Person feels lighter."},
+        {q:"Friction always acts:",options:["In direction of motion","Opposite to motion","Perpendicular to motion","At 45° to motion"],answer:1,exp:"Friction opposes relative motion between surfaces, so it acts opposite to the direction of motion."},
+      ],
+      4:[
+        {q:"Work done is zero when force and displacement are:",options:["Parallel","Antiparallel","Perpendicular","Equal"],answer:2,exp:"W = F⋅d⋅cosθ. When θ = 90°, cosθ = 0, so W = 0. Force perpendicular to displacement does no work."},
+        {q:"The SI unit of energy is:",options:["Watt","Newton","Joule","Pascal"],answer:2,exp:"The SI unit of energy and work is Joule (J). 1 J = 1 N⋅m = 1 kg⋅m²/s²."},
+        {q:"Kinetic energy of a body is:",options:["½mv","½mv²","mv²","2mv²"],answer:1,exp:"Kinetic energy KE = ½mv², where m is mass and v is velocity."},
+        {q:"Power is defined as:",options:["Work × time","Work / time","Force × velocity²","Energy × time"],answer:1,exp:"Power = Work/time = rate of doing work. SI unit is Watt (W) = J/s."},
+        {q:"A spring stores energy as:",options:["Kinetic energy","Thermal energy","Elastic potential energy","Chemical energy"],answer:2,exp:"A compressed/stretched spring stores elastic potential energy = ½kx², where k is spring constant."},
+        {q:"When a ball is thrown upward, at maximum height:",options:["KE is maximum","PE is maximum","Both KE and PE are maximum","Both are zero"],answer:1,exp:"At maximum height, velocity = 0 so KE = 0 and PE is maximum (converted from KE)."},
+        {q:"The work-energy theorem states:",options:["Work = force × time","Net work = change in KE","Work = change in PE","Power = work/force"],answer:1,exp:"Work-energy theorem: net work done on a body = change in its kinetic energy."},
+        {q:"1 kilowatt-hour (kWh) is equal to:",options:["1000 J","3.6 × 10⁶ J","3600 J","1 × 10³ J"],answer:1,exp:"1 kWh = 1000 W × 3600 s = 3.6 × 10⁶ J. This is the unit used for electrical energy billing."},
+        {q:"A perfectly elastic collision conserves:",options:["Only momentum","Only kinetic energy","Both momentum and kinetic energy","Neither"],answer:2,exp:"In elastic collision: both momentum AND kinetic energy are conserved."},
+        {q:"The SI unit of power is:",options:["Joule","Newton","Watt","Pascal"],answer:2,exp:"The SI unit of power is Watt (W). 1 W = 1 J/s."},
+      ],
+    };
+
+    let currentChapter = null;
+    let questions = [];
+    let currentQ = 0;
+    let score = 0;
+    let timer = null;
+    let timeLeft = 20;
+    let answered = false;
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length-1; i > 0; i--) {
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      document.getElementById('errorMsg').textContent = msg;
+      box.style.display = 'block';
+    }
+
+    function getBackup(num) {
+      if (BACKUP[num]) return shuffle(BACKUP[num]).slice(0,10);
+      return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];
+    }
+
+    async function fetchQuestions(chapter) {
+      try {
+        const res = await fetch('/.netlify/functions/ask-groq', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chapter: chapter.num,
+            chapterName: chapter.name,
+            subject: 'Physics',
+            classNum: '11'
+          })
+        });
+        const data = await res.json();
+        if (data.questions && data.questions.length >= 5) return data.questions;
+        throw new Error('Invalid response');
+      } catch(err) {
+        console.warn('Netlify function failed, using backup:', err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 20;
+      updateTimerDisplay();
+      timer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) { clearInterval(timer); timeUp(); }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('timerCircle');
+      el.textContent = timeLeft;
+      el.className = 'timer-circle';
+      if (timeLeft <= 5) el.classList.add('danger');
+      else if (timeLeft <= 10) el.classList.add('warning');
+    }
+
+    function timeUp() {
+      if (!answered) { answered = true; revealAnswer(-1); }
+    }
+
+    function loadQuestion() {
+      if (currentQ >= questions.length) { showResults(); return; }
+      answered = false;
+      const q = questions[currentQ];
+      document.getElementById('qNum').textContent = currentQ+1;
+      document.getElementById('qTotal').textContent = questions.length;
+      document.getElementById('scoreDisplay').textContent = score;
+      document.getElementById('questionChapter').textContent = `Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent = q.q;
+      document.getElementById('progressBar').style.width = `${(currentQ/questions.length)*100}%`;
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+      ['A','B','C','D'].forEach((label, i) => {
+        if (!q.options[i]) return;
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick = () => selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      const expBox = document.getElementById('explanationBox');
+      expBox.style.display = 'none';
+      expBox.className = 'explanation-box';
+      document.getElementById('nextBtn').style.display = 'none';
+      startTimer();
+    }
+
+    function selectAnswer(idx) {
+      if (answered) return;
+      answered = true;
+      clearInterval(timer);
+      revealAnswer(idx);
+    }
+
+    function revealAnswer(selected) {
+      const q = questions[currentQ];
+      const btns = document.querySelectorAll('.option-btn');
+      const isCorrect = selected === q.answer;
+      if (isCorrect) score++;
+      btns.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.answer) btn.classList.add('correct');
+        else if (i === selected) btn.classList.add('wrong');
+      });
+      const expBox = document.getElementById('explanationBox');
+      expBox.style.display = 'block';
+      expBox.className = `explanation-box ${isCorrect ? 'correct-exp' : 'wrong-exp'}`;
+      expBox.innerHTML = isCorrect
+        ? `✅ <strong>Correct!</strong> ${q.exp}`
+        : `❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display = 'block';
+      document.getElementById('scoreDisplay').textContent = score;
+    }
+
+    function nextQuestion() {
+      currentQ++;
+      loadQuestion();
+    }
+
+    function showResults() {
+      clearInterval(timer);
+      const total = questions.length;
+      const wrong = total - score;
+      const percent = Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent = score;
+      document.getElementById('finalTotal').textContent = total;
+      document.getElementById('statCorrect').textContent = score;
+      document.getElementById('statWrong').textContent = wrong;
+      document.getElementById('statPercent').textContent = percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Physics genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='You really know your physics!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Solid performance. Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review the chapter and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Physics takes practice. Try again!';}
+      document.getElementById('resultsEmoji').textContent = emoji;
+      document.getElementById('resultsTitle').textContent = title;
+      document.getElementById('resultsSubtitle').textContent = subtitle;
+      document.getElementById('progressBar').style.width = '100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame() { startGame(currentChapter); }
+
+    async function startGame(chapter) {
+      currentChapter = chapter;
+      score = 0;
+      currentQ = 0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent = `Chapter ${chapter.num}: ${chapter.name}`;
+      questions = await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init() {
+      const grid = document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = 'chapter-btn';
+        btn.innerHTML = `<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick = () => startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -594,11 +594,12 @@
     </div>
 
   </div><!-- /game-wrapper -->
+
   <script>
     /* ══════════════════════════════════════════
        CONFIG — PASTE YOUR GROQ KEY HERE
     ══════════════════════════════════════════ */
-    const GROQ_API_KEY = '';
+    const GROQ_API_KEY = 'your-groq-api-key-here';
     const GROQ_MODEL   = 'llama-3.3-70b-versatile';
 
     /* ══════════════════════════════════════════
@@ -768,37 +769,123 @@
 
       questions = await fetchQuestions(chapter);
       showScreen('screen-game');
-      setTimeout(loadQuestion, 100);
+      loadQuestion();
     }
 
     /* ══════════════════════════════════════════
        FETCH QUESTIONS (Groq → fallback)
     ══════════════════════════════════════════ */
     async function fetchQuestions(chapter) {
-  try {
-    const res = await fetch('/.netlify/functions/ask-groq', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chapter: chapter.num,
-        chapterName: chapter.name,
-        subject: 'Chemistry',
-        classNum: '11'
-      })
-    });
+      if (GROQ_API_KEY === 'your-groq-api-key-here') {
+        return getBackup(chapter.num);
+      }
 
-    const data = await res.json();
-    if (data.questions && data.questions.length >= 5) {
-      return data.questions;
-    }
-    throw new Error('Invalid response');
+      try {
+        const prompt = `You are an expert NCERT Chemistry teacher for Class 11 CBSE India.
+Generate exactly 10 multiple choice questions for Chapter ${chapter.num}: "${chapter.name}".
 
-  } catch (err) {
-    console.warn('Function failed, using backup:', err);
-    showError(`Using backup questions. (${err.message})`);
-    return getBackup(chapter.num);
+Rules:
+- Questions must be based strictly on NCERT Class 11 Chemistry syllabus
+- Each question must have exactly 4 options (A, B, C, D)
+- Only one correct answer per question
+- Include a brief explanation for the correct answer
+- Vary difficulty: 3 easy, 4 medium, 3 hard
+- Do not repeat questions
+
+Respond ONLY with a valid JSON array. No extra text. Format:
+[
+  {
+    "q": "question text",
+    "options": ["option A", "option B", "option C", "option D"],
+    "answer": 0,
+    "exp": "explanation of correct answer"
   }
-}
+]
+Where "answer" is the 0-based index of the correct option.`;
+
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${GROQ_API_KEY}`
+          },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [{ role: 'user', content: prompt }],
+            temperature: 0.7,
+            max_tokens: 2000
+          })
+        });
+
+        if (!res.ok) throw new Error(`Groq error: ${res.status}`);
+
+        const data = await res.json();
+        let text = data.choices[0].message.content.trim();
+
+        // Strip markdown fences if present
+        text = text.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(text);
+
+        if (Array.isArray(parsed) && parsed.length >= 5) {
+          return parsed.slice(0, 10);
+        }
+        throw new Error('Invalid response format');
+
+      } catch (err) {
+        console.warn('Groq failed, using backup:', err);
+        showError(`Groq unavailable. Using backup questions. (${err.message})`);
+        return getBackup(chapter.num);
+      }
+    }
+
+    function getBackup(chNum) {
+      if (BACKUP_QUESTIONS[chNum]) {
+        return shuffle([...BACKUP_QUESTIONS[chNum]]).slice(0, 10);
+      }
+      // Generic fallback for chapters without backup
+      return [
+        { q: `What is the main topic studied in Chapter ${chNum} of NCERT Chemistry Class 11?`, options: ["Atomic structure", "Chemical bonding", "The chapter topic", "Thermodynamics"], answer: 2, exp: "Please refer to your NCERT textbook for detailed study of this chapter." }
+      ];
+    }
+
+    /* ══════════════════════════════════════════
+       LOAD QUESTION
+    ══════════════════════════════════════════ */
+    function loadQuestion() {
+      if (currentQ >= questions.length) { showResults(); return; }
+
+      answered = false;
+      const q = questions[currentQ];
+
+      document.getElementById('qNum').textContent        = currentQ + 1;
+      document.getElementById('qTotal').textContent      = questions.length;
+      document.getElementById('scoreDisplay').textContent = score;
+      document.getElementById('questionChapter').textContent = `Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent = q.q;
+      document.getElementById('progressBar').style.width = `${((currentQ) / questions.length) * 100}%`;
+
+      // Build options
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+      const labels = ['A', 'B', 'C', 'D'];
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-label">${labels[i]}</span><span>${opt}</span>`;
+        btn.onclick = () => selectAnswer(i);
+        grid.appendChild(btn);
+      });
+
+      // Hide explanation & next btn
+      const expBox = document.getElementById('explanationBox');
+      expBox.style.display = 'none';
+      expBox.className = 'explanation-box';
+      document.getElementById('nextBtn').style.display = 'none';
+
+      // Start timer
+      startTimer();
+    }
+
     /* ══════════════════════════════════════════
        TIMER
     ══════════════════════════════════════════ */
@@ -934,7 +1021,7 @@
     }
 
     /* ── Start ── */
-    document.addEventListener('DOMContentLoaded', init);
+    init();
   </script>
 
 </body>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biology 11 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(86,207,145,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(86,207,145,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--biology); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--biology); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--biology); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--biology); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--biology),#00e5ff); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--biology); background:rgba(86,207,145,0.12); border:1px solid rgba(86,207,145,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(86,207,145,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--biology); color:#000; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(86,207,145,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--biology); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--biology); color:#000; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(86,207,145,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+
+    <!-- SCREEN 1: CHAPTER SELECT -->
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a>
+        <span>/</span>
+        <a href="science-11.html" style="color:var(--text-muted);">Science 11</a>
+        <span>/</span>
+        <span style="color:var(--biology);">Biology MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(86,207,145,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">🌿</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Biology · Class 11 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <!-- SCREEN 2: LOADING -->
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <!-- SCREEN 3: GAME -->
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+      </div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <!-- SCREEN 4: RESULTS -->
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big">
+          <span id="finalScore">0</span>
+          <span class="out-of">/ <span id="finalTotal">10</span></span>
+        </div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div>
+            <div class="rs-label">Correct</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--economics)" id="statWrong">0</div>
+            <div class="rs-label">Wrong</div>
+          </div>
+          <div class="result-stat">
+            <div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div>
+            <div class="rs-label">Score</div>
+          </div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-11.html" class="btn-back">← Back to Science 11</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      { num:1, name:'The Living World' },
+      { num:2, name:'Biological Classification' },
+      { num:3, name:'Plant Kingdom' },
+      { num:4, name:'Animal Kingdom' },
+      { num:5, name:'Morphology of Flowering Plants' },
+      { num:6, name:'Anatomy of Flowering Plants' },
+      { num:7, name:'Structural Organisation in Animals' },
+      { num:8, name:'Cell: The Unit of Life' },
+      { num:9, name:'Biomolecules' },
+      { num:10, name:'Cell Cycle and Cell Division' },
+      { num:11, name:'Transport in Plants' },
+      { num:12, name:'Mineral Nutrition' },
+      { num:13, name:'Photosynthesis in Higher Plants' },
+      { num:14, name:'Respiration in Plants' },
+      { num:15, name:'Plant Growth and Development' },
+      { num:16, name:'Digestion and Absorption' },
+      { num:17, name:'Breathing and Exchange of Gases' },
+      { num:18, name:'Body Fluids and Circulation' },
+      { num:19, name:'Excretory Products and their Elimination' },
+      { num:20, name:'Locomotion and Movement' },
+      { num:21, name:'Neural Control and Coordination' },
+      { num:22, name:'Chemical Coordination and Integration' },
+    ];
+
+    const BACKUP = {
+      1:[
+        {q:"Which of the following is NOT a characteristic of living organisms?",options:["Growth","Reproduction","Consciousness","Metabolism"],answer:2,exp:"Consciousness is debated. The definitive characteristics of life are growth, reproduction, metabolism, and response to stimuli."},
+        {q:"Taxonomy is the science of:",options:["Study of fossils","Classification of organisms","Study of cells","Study of heredity"],answer:1,exp:"Taxonomy is the branch of biology dealing with identification, nomenclature and classification of organisms."},
+        {q:"Binomial nomenclature was given by:",options:["Darwin","Mendel","Linnaeus","Aristotle"],answer:2,exp:"Carl Linnaeus introduced binomial nomenclature — giving each organism a two-part Latin name (genus + species)."},
+        {q:"The basic unit of classification is:",options:["Family","Genus","Species","Order"],answer:2,exp:"Species is the basic/fundamental unit of classification. Members of a species can interbreed and produce fertile offspring."},
+        {q:"ICBN stands for:",options:["International Code of Botanical Nomenclature","Indian Classification of Biological Names","International Committee of Biological Nomenclature","Indian Code of Botanical Names"],answer:0,exp:"ICBN = International Code of Botanical Nomenclature. It governs the naming of plants."},
+        {q:"Which is the correct sequence of taxonomic hierarchy?",options:["Kingdom→Phylum→Class→Order→Family→Genus→Species","Kingdom→Class→Phylum→Order→Family→Genus→Species","Species→Genus→Family→Order→Class→Phylum→Kingdom","Phylum→Kingdom→Class→Order→Family→Genus→Species"],answer:0,exp:"Correct hierarchy: Kingdom→Phylum→Class→Order→Family→Genus→Species. Mnemonic: King Philip Came Over For Good Soup."},
+        {q:"The scientific name of humans is:",options:["Homo sapiens","Homo erectus","Homo habilis","Pan troglodytes"],answer:0,exp:"The scientific name of modern humans is Homo sapiens (genus Homo, species sapiens meaning 'wise')."},
+        {q:"Metabolism includes:",options:["Only anabolism","Only catabolism","Both anabolism and catabolism","Neither"],answer:2,exp:"Metabolism includes both anabolism (building up/synthesis) and catabolism (breaking down) of molecules."},
+        {q:"A herbarium is:",options:["A garden of herbs","Collection of dried preserved plant specimens","A place to grow medicinal plants","Collection of animal specimens"],answer:1,exp:"A herbarium is a collection of dried, pressed and preserved plant specimens mounted on sheets for reference."},
+        {q:"Which is NOT a kingdom in Whittaker's five kingdom classification?",options:["Monera","Protista","Fungi","Virus"],answer:3,exp:"Whittaker's five kingdoms are: Monera, Protista, Fungi, Plantae, Animalia. Viruses are not included as they're non-cellular."},
+      ],
+      8:[
+        {q:"Cell theory was proposed by:",options:["Darwin and Wallace","Schleiden and Schwann","Watson and Crick","Mendel and Morgan"],answer:1,exp:"Cell theory was proposed by Matthias Schleiden (1838) and Theodor Schwann (1839): all living things are made of cells."},
+        {q:"Which organelle is called the 'powerhouse of the cell'?",options:["Nucleus","Ribosome","Mitochondria","Chloroplast"],answer:2,exp:"Mitochondria produce ATP through cellular respiration, hence called the powerhouse of the cell."},
+        {q:"The fluid mosaic model of cell membrane was proposed by:",options:["Watson and Crick","Singer and Nicolson","Schleiden and Schwann","Camillo Golgi"],answer:1,exp:"Singer and Nicolson (1972) proposed the fluid mosaic model — phospholipid bilayer with embedded proteins."},
+        {q:"Prokaryotic cells lack:",options:["Cell wall","Ribosome","Membrane-bound nucleus","Plasma membrane"],answer:2,exp:"Prokaryotes (bacteria, archaea) lack a membrane-bound nucleus. Their DNA is in the nucleoid region."},
+        {q:"Which organelle is responsible for protein synthesis?",options:["Mitochondria","Golgi apparatus","Ribosome","Lysosome"],answer:2,exp:"Ribosomes are the sites of protein synthesis. They can be free in cytoplasm or attached to rough ER."},
+        {q:"Lysosomes are called 'suicide bags' because:",options:["They produce energy","They contain digestive enzymes that can destroy the cell","They help in cell division","They store food"],answer:1,exp:"Lysosomes contain hydrolytic enzymes. When ruptured, these enzymes digest the cell itself — hence 'suicide bags'."},
+        {q:"The largest organelle in a plant cell is:",options:["Nucleus","Mitochondria","Chloroplast","Central vacuole"],answer:3,exp:"The central vacuole in plant cells can occupy up to 90% of cell volume, making it the largest organelle."},
+        {q:"Smooth ER is involved in:",options:["Protein synthesis","Lipid synthesis","DNA replication","Cell division"],answer:1,exp:"Smooth ER (without ribosomes) is involved in lipid synthesis, detoxification and steroid hormone production."},
+        {q:"Which structure controls entry and exit of materials in cell?",options:["Cell wall","Nuclear membrane","Plasma membrane","Endoplasmic reticulum"],answer:2,exp:"The plasma membrane (selectively permeable) controls what enters and exits the cell."},
+        {q:"Centrosome is found in:",options:["Only plant cells","Only animal cells","Both plant and animal cells","Neither"],answer:1,exp:"Centrosome (with centrioles) is found in animal cells. It organizes the spindle during cell division."},
+      ],
+      13:[
+        {q:"Photosynthesis occurs in:",options:["Mitochondria","Chloroplast","Nucleus","Ribosome"],answer:1,exp:"Photosynthesis occurs in chloroplasts. The light reactions happen in thylakoids and Calvin cycle in stroma."},
+        {q:"The overall equation of photosynthesis is:",options:["6CO₂+6H₂O→C₆H₁₂O₆+6O₂","6O₂+6H₂O→C₆H₁₂O₆+6CO₂","C₆H₁₂O₆+6O₂→6CO₂+6H₂O","6CO₂+12H₂O→C₆H₁₂O₆+6H₂O+6O₂"],answer:0,exp:"Photosynthesis: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. Carbon dioxide and water converted to glucose and oxygen."},
+        {q:"The primary pigment for photosynthesis is:",options:["Carotenoid","Xanthophyll","Chlorophyll a","Chlorophyll b"],answer:2,exp:"Chlorophyll a is the primary/reaction centre pigment. It directly participates in light reactions."},
+        {q:"Light reactions of photosynthesis occur in:",options:["Stroma","Thylakoid membrane","Matrix","Cytoplasm"],answer:1,exp:"Light reactions (photolysis of water, ATP and NADPH formation) occur in the thylakoid membranes."},
+        {q:"The Calvin cycle is also called:",options:["Light reactions","Dark reactions","Photorespiration","C4 cycle"],answer:1,exp:"The Calvin cycle = dark reactions/light-independent reactions. Occurs in stroma, fixes CO₂ into glucose."},
+        {q:"C3 plants use which pathway?",options:["Calvin cycle only","Hatch-Slack pathway","CAM pathway","C4 pathway"],answer:0,exp:"C3 plants (like wheat, rice) fix CO₂ directly via Calvin cycle. First stable product is 3-carbon compound (3-PGA)."},
+        {q:"Which gas is released during photosynthesis?",options:["Carbon dioxide","Nitrogen","Oxygen","Hydrogen"],answer:2,exp:"Oxygen is released during photolysis of water in light reactions: 2H₂O → 4H⁺ + 4e⁻ + O₂."},
+        {q:"RuBisCO enzyme fixes:",options:["Oxygen","Nitrogen","Carbon dioxide","Water"],answer:2,exp:"RuBisCO (Ribulose bisphosphate carboxylase/oxygenase) fixes CO₂ in the Calvin cycle. It's the most abundant enzyme on Earth."},
+        {q:"Photorespiration occurs in:",options:["Only C3 plants","Only C4 plants","CAM plants","All plants"],answer:0,exp:"Photorespiration (wasteful oxidation of RuBP by RuBisCO) occurs mainly in C3 plants. C4 plants have a mechanism to minimize it."},
+        {q:"The antenna pigments in photosynthesis:",options:["Directly perform photolysis","Absorb and transfer light energy to reaction centre","Synthesize ATP","Fix carbon dioxide"],answer:1,exp:"Antenna/accessory pigments absorb light of various wavelengths and transfer energy to the reaction centre (chlorophyll a)."},
+      ],
+    };
+
+    let currentChapter=null,questions=[],currentQ=0,score=0,timer=null,timeLeft=20,answered=false;
+
+    function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+    function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function showError(msg){const box=document.getElementById('errorBox');document.getElementById('errorMsg').textContent=msg;box.style.display='block';}
+    function getBackup(num){if(BACKUP[num])return shuffle(BACKUP[num]).slice(0,10);return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];}
+
+    async function fetchQuestions(chapter){
+      try{
+        const res=await fetch('/.netlify/functions/ask-groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chapter:chapter.num,chapterName:chapter.name,subject:'Biology',classNum:'11'})});
+        const data=await res.json();
+        if(data.questions&&data.questions.length>=5)return data.questions;
+        throw new Error('Invalid response');
+      }catch(err){
+        console.warn('Netlify function failed:',err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer(){clearInterval(timer);timeLeft=20;updateTimerDisplay();timer=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timer);timeUp();}},1000);}
+    function updateTimerDisplay(){const el=document.getElementById('timerCircle');el.textContent=timeLeft;el.className='timer-circle';if(timeLeft<=5)el.classList.add('danger');else if(timeLeft<=10)el.classList.add('warning');}
+    function timeUp(){if(!answered){answered=true;revealAnswer(-1);}}
+
+    function loadQuestion(){
+      if(currentQ>=questions.length){showResults();return;}
+      answered=false;
+      const q=questions[currentQ];
+      document.getElementById('qNum').textContent=currentQ+1;
+      document.getElementById('qTotal').textContent=questions.length;
+      document.getElementById('scoreDisplay').textContent=score;
+      document.getElementById('questionChapter').textContent=`Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent=q.q;
+      document.getElementById('progressBar').style.width=`${(currentQ/questions.length)*100}%`;
+      const grid=document.getElementById('optionsGrid');
+      grid.innerHTML='';
+      ['A','B','C','D'].forEach((label,i)=>{
+        if(!q.options[i])return;
+        const btn=document.createElement('button');
+        btn.className='option-btn';
+        btn.innerHTML=`<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick=()=>selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      document.getElementById('explanationBox').style.display='none';
+      document.getElementById('explanationBox').className='explanation-box';
+      document.getElementById('nextBtn').style.display='none';
+      startTimer();
+    }
+
+    function selectAnswer(idx){if(answered)return;answered=true;clearInterval(timer);revealAnswer(idx);}
+
+    function revealAnswer(selected){
+      const q=questions[currentQ];
+      const btns=document.querySelectorAll('.option-btn');
+      const isCorrect=selected===q.answer;
+      if(isCorrect)score++;
+      btns.forEach((btn,i)=>{btn.disabled=true;if(i===q.answer)btn.classList.add('correct');else if(i===selected)btn.classList.add('wrong');});
+      const expBox=document.getElementById('explanationBox');
+      expBox.style.display='block';
+      expBox.className=`explanation-box ${isCorrect?'correct-exp':'wrong-exp'}`;
+      expBox.innerHTML=isCorrect?`✅ <strong>Correct!</strong> ${q.exp}`:`❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display='block';
+      document.getElementById('scoreDisplay').textContent=score;
+    }
+
+    function nextQuestion(){currentQ++;loadQuestion();}
+
+    function showResults(){
+      clearInterval(timer);
+      const total=questions.length,wrong=total-score,percent=Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent=score;
+      document.getElementById('finalTotal').textContent=total;
+      document.getElementById('statCorrect').textContent=score;
+      document.getElementById('statWrong').textContent=wrong;
+      document.getElementById('statPercent').textContent=percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Biology genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='You really know your biology!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Solid performance. Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review the chapter and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Biology takes practice. Try again!';}
+      document.getElementById('resultsEmoji').textContent=emoji;
+      document.getElementById('resultsTitle').textContent=title;
+      document.getElementById('resultsSubtitle').textContent=subtitle;
+      document.getElementById('progressBar').style.width='100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame(){startGame(currentChapter);}
+
+    async function startGame(chapter){
+      currentChapter=chapter;score=0;currentQ=0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent=`Chapter ${chapter.num}: ${chapter.name}`;
+      questions=await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init(){
+      const grid=document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch=>{
+        const btn=document.createElement('button');
+        btn.className='chapter-btn';
+        btn.innerHTML=`<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick=()=>startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>

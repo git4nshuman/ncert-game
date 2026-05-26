@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics 12 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(124,131,255,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(124,131,255,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--physics); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--physics); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--physics); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--physics); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--physics),#00e5ff); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--physics); background:rgba(124,131,255,0.12); border:1px solid rgba(124,131,255,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(124,131,255,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--physics); color:#fff; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,131,255,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--physics); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--physics); color:#fff; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,131,255,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a><span>/</span>
+        <a href="science-12.html" style="color:var(--text-muted);">Science 12</a><span>/</span>
+        <span style="color:var(--physics);">Physics MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(124,131,255,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">⚡</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Physics · Class 12 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big"><span id="finalScore">0</span><span class="out-of">/ <span id="finalTotal">10</span></span></div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat"><div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div><div class="rs-label">Correct</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--economics)" id="statWrong">0</div><div class="rs-label">Wrong</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div><div class="rs-label">Score</div></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-12.html" class="btn-back">← Back to Science 12</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      {num:1,name:'Electric Charges and Fields'},
+      {num:2,name:'Electrostatic Potential and Capacitance'},
+      {num:3,name:'Current Electricity'},
+      {num:4,name:'Moving Charges and Magnetism'},
+      {num:5,name:'Magnetism and Matter'},
+      {num:6,name:'Electromagnetic Induction'},
+      {num:7,name:'Alternating Current'},
+      {num:8,name:'Electromagnetic Waves'},
+      {num:9,name:'Ray Optics and Optical Instruments'},
+      {num:10,name:'Wave Optics'},
+      {num:11,name:'Dual Nature of Radiation and Matter'},
+      {num:12,name:'Atoms'},
+      {num:13,name:'Nuclei'},
+      {num:14,name:'Semiconductor Electronics'},
+    ];
+
+    const BACKUP = {
+      1:[
+        {q:"The SI unit of electric charge is:",options:["Ampere","Coulomb","Volt","Farad"],answer:1,exp:"The SI unit of electric charge is Coulomb (C). 1 C = charge of 6.24 × 10¹⁸ electrons."},
+        {q:"Like charges:",options:["Attract each other","Repel each other","Have no effect","Neutralize each other"],answer:1,exp:"Like charges (both positive or both negative) repel each other. Unlike charges attract."},
+        {q:"Coulomb's law gives force between two charges as:",options:["F = kq₁q₂/r","F = kq₁q₂/r²","F = kq₁q₂·r²","F = kq₁/q₂r²"],answer:1,exp:"Coulomb's law: F = kq₁q₂/r² where k = 9×10⁹ Nm²/C², q₁,q₂ are charges, r is distance."},
+        {q:"Electric field lines start from:",options:["Negative charge","Positive charge","Neutral point","Ground"],answer:1,exp:"Electric field lines start from positive charges and end at negative charges."},
+        {q:"The electric field inside a conductor is:",options:["Maximum","Minimum","Zero","Infinite"],answer:2,exp:"Inside a conductor in electrostatic equilibrium, the electric field is zero. All charge resides on surface."},
+        {q:"Gauss's law relates electric flux to:",options:["Charge outside surface","Total charge enclosed","Surface area","Electric potential"],answer:1,exp:"Gauss's law: Total electric flux through a closed surface = total enclosed charge / ε₀."},
+        {q:"The unit of electric field is:",options:["N/C or V/m","J/C","C/N","V·m"],answer:0,exp:"Electric field unit is N/C (Newton per Coulomb) or equivalently V/m (Volt per metre)."},
+        {q:"Electric dipole moment is:",options:["Scalar quantity","Vector quantity pointing from +q to -q","Vector from -q to +q","Zero always"],answer:2,exp:"Electric dipole moment p = q×2a, vector pointing from negative to positive charge."},
+        {q:"Quantization of charge means:",options:["Charge can be any value","Charge is always multiple of e","Charge is always negative","Charge cannot be measured"],answer:1,exp:"Quantization: charge exists only in integral multiples of e (1.6×10⁻¹⁹ C). q = ne where n is integer."},
+        {q:"The value of permittivity of free space ε₀ is:",options:["9×10⁹ Nm²/C²","8.85×10⁻¹² C²/Nm²","1.6×10⁻¹⁹ C","6.67×10⁻¹¹ Nm²/kg²"],answer:1,exp:"ε₀ = 8.85×10⁻¹² C²/Nm² (or F/m). It appears in Coulomb's law as k = 1/4πε₀."},
+      ],
+      3:[
+        {q:"Ohm's law states that:",options:["V = IR","V = I/R","V = I²R","V = R/I"],answer:0,exp:"Ohm's law: V = IR, where V is voltage, I is current, R is resistance. Valid for ohmic conductors."},
+        {q:"The SI unit of resistance is:",options:["Ampere","Volt","Ohm","Siemens"],answer:2,exp:"The SI unit of resistance is Ohm (Ω). 1 Ω = 1 V/A."},
+        {q:"Resistivity depends on:",options:["Length of conductor","Area of cross-section","Material and temperature","Shape of conductor"],answer:2,exp:"Resistivity (ρ) is a material property. It depends on the material and temperature, not on shape or size."},
+        {q:"When resistors are connected in series:",options:["Current divides","Voltage is same across all","Total resistance is sum","Equivalent resistance decreases"],answer:2,exp:"In series: same current flows, voltages add up, total resistance R = R₁ + R₂ + R₃..."},
+        {q:"EMF of a cell is:",options:["Work done per unit charge","Force on charge","Current produced","Resistance of cell"],answer:0,exp:"EMF (electromotive force) = work done per unit charge by cell = energy given per coulomb of charge."},
+        {q:"Kirchhoff's current law states:",options:["Sum of voltages in loop = 0","Sum of currents at junction = 0","V = IR","Power = VI"],answer:1,exp:"KCL (junction rule): Sum of currents entering a junction = sum leaving. Charge is conserved."},
+        {q:"The power dissipated in a resistor is:",options:["P = V²/R","P = I²R","P = VI","All of the above"],answer:3,exp:"Power P = VI = I²R = V²/R. All three formulas are equivalent using Ohm's law."},
+        {q:"Drift velocity of electrons is:",options:["Speed of light","Very high","Very slow (~mm/s)","Zero"],answer:2,exp:"Drift velocity is very slow, typically ~10⁻⁴ m/s (mm/s). It's the average velocity of electrons due to electric field."},
+        {q:"A Wheatstone bridge is used to measure:",options:["Current","Voltage","Unknown resistance","Power"],answer:2,exp:"Wheatstone bridge accurately measures unknown resistance. Balanced condition: P/Q = R/S."},
+        {q:"Internal resistance of an ideal cell is:",options:["Infinite","Very high","Zero","Equal to external resistance"],answer:2,exp:"An ideal cell has zero internal resistance, so terminal voltage equals EMF. Real cells have small internal resistance."},
+      ],
+      9:[
+        {q:"The speed of light in vacuum is:",options:["3×10⁸ m/s","3×10⁶ m/s","3×10¹⁰ m/s","3×10⁴ m/s"],answer:0,exp:"Speed of light c = 3×10⁸ m/s in vacuum. This is a fundamental constant of nature."},
+        {q:"Snell's law of refraction states:",options:["n₁sinθ₁ = n₂sinθ₂","n₁cosθ₁ = n₂cosθ₂","sinθ₁/sinθ₂ = constant for all media","n₁θ₁ = n₂θ₂"],answer:0,exp:"Snell's law: n₁sinθ₁ = n₂sinθ₂. The ratio of sines of angles equals inverse ratio of refractive indices."},
+        {q:"Total internal reflection occurs when:",options:["Angle of incidence < critical angle","Angle of incidence > critical angle","Light goes from denser to rarer medium only","Both B and C"],answer:3,exp:"TIR occurs when: (1) light travels from denser to rarer medium AND (2) angle of incidence exceeds critical angle."},
+        {q:"A convex lens is also called:",options:["Diverging lens","Converging lens","Concave lens","Plane lens"],answer:1,exp:"A convex (converging) lens brings parallel rays to a focus. Thicker in middle than edges."},
+        {q:"The lens formula is:",options:["1/f = 1/v + 1/u","1/f = 1/v - 1/u","f = v - u","1/f = 1/u - 1/v"],answer:1,exp:"Lens formula: 1/f = 1/v - 1/u, where f=focal length, v=image distance, u=object distance."},
+        {q:"Power of a lens is:",options:["f","1/f in metres","f in cm","f²"],answer:1,exp:"Power P = 1/f (in metres), unit is Dioptre (D). Convex lens has positive power, concave has negative."},
+        {q:"Which phenomenon causes rainbow formation?",options:["Reflection only","Refraction only","Dispersion and total internal reflection","Diffraction"],answer:2,exp:"Rainbow forms due to dispersion (splitting of white light) and total internal reflection inside water droplets."},
+        {q:"Optical fibre works on the principle of:",options:["Refraction","Reflection","Total internal reflection","Diffraction"],answer:2,exp:"Optical fibres use total internal reflection to transmit light signals over long distances with minimal loss."},
+        {q:"The mirror formula is:",options:["1/f = 1/v + 1/u","1/f = 1/v - 1/u","f = v + u","1/f = v + u"],answer:0,exp:"Mirror formula: 1/f = 1/v + 1/u where f=focal length, v=image distance, u=object distance."},
+        {q:"Magnification by a mirror is:",options:["m = v/u","m = -v/u","m = u/v","m = f/u"],answer:1,exp:"Linear magnification m = -v/u. Negative sign indicates inverted image for real images."},
+      ],
+    };
+
+    let currentChapter=null,questions=[],currentQ=0,score=0,timer=null,timeLeft=20,answered=false;
+
+    function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+    function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function showError(msg){const box=document.getElementById('errorBox');document.getElementById('errorMsg').textContent=msg;box.style.display='block';}
+    function getBackup(num){if(BACKUP[num])return shuffle(BACKUP[num]).slice(0,10);return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];}
+
+    async function fetchQuestions(chapter){
+      try{
+        const res=await fetch('/.netlify/functions/ask-groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chapter:chapter.num,chapterName:chapter.name,subject:'Physics',classNum:'12'})});
+        const data=await res.json();
+        if(data.questions&&data.questions.length>=5)return data.questions;
+        throw new Error('Invalid response');
+      }catch(err){
+        console.warn('Netlify function failed:',err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer(){clearInterval(timer);timeLeft=20;updateTimerDisplay();timer=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timer);timeUp();}},1000);}
+    function updateTimerDisplay(){const el=document.getElementById('timerCircle');el.textContent=timeLeft;el.className='timer-circle';if(timeLeft<=5)el.classList.add('danger');else if(timeLeft<=10)el.classList.add('warning');}
+    function timeUp(){if(!answered){answered=true;revealAnswer(-1);}}
+
+    function loadQuestion(){
+      if(currentQ>=questions.length){showResults();return;}
+      answered=false;
+      const q=questions[currentQ];
+      document.getElementById('qNum').textContent=currentQ+1;
+      document.getElementById('qTotal').textContent=questions.length;
+      document.getElementById('scoreDisplay').textContent=score;
+      document.getElementById('questionChapter').textContent=`Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent=q.q;
+      document.getElementById('progressBar').style.width=`${(currentQ/questions.length)*100}%`;
+      const grid=document.getElementById('optionsGrid');
+      grid.innerHTML='';
+      ['A','B','C','D'].forEach((label,i)=>{
+        if(!q.options[i])return;
+        const btn=document.createElement('button');
+        btn.className='option-btn';
+        btn.innerHTML=`<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick=()=>selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      document.getElementById('explanationBox').style.display='none';
+      document.getElementById('explanationBox').className='explanation-box';
+      document.getElementById('nextBtn').style.display='none';
+      startTimer();
+    }
+
+    function selectAnswer(idx){if(answered)return;answered=true;clearInterval(timer);revealAnswer(idx);}
+
+    function revealAnswer(selected){
+      const q=questions[currentQ];
+      const btns=document.querySelectorAll('.option-btn');
+      const isCorrect=selected===q.answer;
+      if(isCorrect)score++;
+      btns.forEach((btn,i)=>{btn.disabled=true;if(i===q.answer)btn.classList.add('correct');else if(i===selected)btn.classList.add('wrong');});
+      const expBox=document.getElementById('explanationBox');
+      expBox.style.display='block';
+      expBox.className=`explanation-box ${isCorrect?'correct-exp':'wrong-exp'}`;
+      expBox.innerHTML=isCorrect?`✅ <strong>Correct!</strong> ${q.exp}`:`❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display='block';
+      document.getElementById('scoreDisplay').textContent=score;
+    }
+
+    function nextQuestion(){currentQ++;loadQuestion();}
+
+    function showResults(){
+      clearInterval(timer);
+      const total=questions.length,wrong=total-score,percent=Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent=score;
+      document.getElementById('finalTotal').textContent=total;
+      document.getElementById('statCorrect').textContent=score;
+      document.getElementById('statWrong').textContent=wrong;
+      document.getElementById('statPercent').textContent=percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Physics 12 genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='Board exam ready!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Practice makes perfect!';}
+      document.getElementById('resultsEmoji').textContent=emoji;
+      document.getElementById('resultsTitle').textContent=title;
+      document.getElementById('resultsSubtitle').textContent=subtitle;
+      document.getElementById('progressBar').style.width='100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame(){startGame(currentChapter);}
+
+    async function startGame(chapter){
+      currentChapter=chapter;score=0;currentQ=0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent=`Chapter ${chapter.num}: ${chapter.name}`;
+      questions=await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init(){
+      const grid=document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch=>{
+        const btn=document.createElement('button');
+        btn.className='chapter-btn';
+        btn.innerHTML=`<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick=()=>startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>

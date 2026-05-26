@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chemistry 12 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(255,107,157,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(255,107,157,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--chemistry); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--chemistry); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--chemistry); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--chemistry); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--chemistry),#ff9f45); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--chemistry); background:rgba(255,107,157,0.12); border:1px solid rgba(255,107,157,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(255,107,157,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--chemistry); color:#000; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,107,157,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--chemistry); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--chemistry); color:#000; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,107,157,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a><span>/</span>
+        <a href="science-12.html" style="color:var(--text-muted);">Science 12</a><span>/</span>
+        <span style="color:var(--chemistry);">Chemistry MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(255,107,157,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">🧪</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Chemistry · Class 12 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big"><span id="finalScore">0</span><span class="out-of">/ <span id="finalTotal">10</span></span></div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat"><div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div><div class="rs-label">Correct</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--economics)" id="statWrong">0</div><div class="rs-label">Wrong</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div><div class="rs-label">Score</div></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-12.html" class="btn-back">← Back to Science 12</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      {num:1,name:'Solutions'},
+      {num:2,name:'Electrochemistry'},
+      {num:3,name:'Chemical Kinetics'},
+      {num:4,name:'d and f Block Elements'},
+      {num:5,name:'Coordination Compounds'},
+      {num:6,name:'Haloalkanes and Haloarenes'},
+      {num:7,name:'Alcohols, Phenols and Ethers'},
+      {num:8,name:'Aldehydes, Ketones and Carboxylic Acids'},
+      {num:9,name:'Amines'},
+      {num:10,name:'Biomolecules'},
+    ];
+
+    const BACKUP = {
+      1:[
+        {q:"A solution that cannot dissolve more solute at given temperature is called:",options:["Unsaturated","Saturated","Supersaturated","Dilute"],answer:1,exp:"A saturated solution contains maximum amount of solute that can dissolve at a given temperature."},
+        {q:"Henry's law states that:",options:["Pressure is proportional to volume","Solubility of gas is proportional to its partial pressure","Vapour pressure depends on temperature","Osmotic pressure = MRT"],answer:1,exp:"Henry's law: p = KH × x, solubility of a gas in liquid is directly proportional to partial pressure of the gas."},
+        {q:"Raoult's law states that:",options:["Partial vapour pressure of component = mole fraction × vapour pressure of pure component","Total pressure = sum of partial pressures","Osmotic pressure = CRT","Boiling point increases with pressure"],answer:0,exp:"Raoult's law: PA = xA × P°A. Partial vapour pressure of component A equals its mole fraction times vapour pressure of pure A."},
+        {q:"Elevation of boiling point is a:",options:["Colligative property","Additive property","Constitutive property","None of these"],answer:0,exp:"Elevation of boiling point is a colligative property — depends only on number of solute particles, not their nature."},
+        {q:"Osmosis is movement of solvent from:",options:["Higher to lower concentration","Lower to higher concentration","Higher to lower pressure","Any direction"],answer:1,exp:"Osmosis: solvent molecules move from lower solute concentration (higher solvent concentration) to higher solute concentration through semipermeable membrane."},
+        {q:"Van't Hoff factor (i) for NaCl in water is approximately:",options:["1","2","3","0.5"],answer:1,exp:"NaCl dissociates into Na⁺ and Cl⁻, giving 2 ions. So i ≈ 2 for complete dissociation."},
+        {q:"Depression in freezing point (ΔTf) =",options:["Kf × m","Kb × m","Kf / m","m / Kf"],answer:0,exp:"ΔTf = Kf × m, where Kf is cryoscopic constant and m is molality of solution."},
+        {q:"Molality is defined as:",options:["Moles of solute per litre of solution","Moles of solute per kg of solvent","Mass of solute per litre","Moles per mole of solvent"],answer:1,exp:"Molality (m) = moles of solute / mass of solvent in kg. Unlike molarity, it doesn't change with temperature."},
+        {q:"Which of the following shows positive deviation from Raoult's law?",options:["Chloroform + Acetone","Water + HCl","Ethanol + Water","Benzene + Toluene"],answer:2,exp:"Ethanol + Water shows positive deviation — A-B interactions weaker than A-A and B-B, leading to higher vapour pressure than expected."},
+        {q:"Osmotic pressure (π) =",options:["nRT/V","CRT","MRT","All of the above"],answer:3,exp:"Osmotic pressure π = CRT = MRT = nRT/V, where C/M is molar concentration, R is gas constant, T is temperature."},
+      ],
+      2:[
+        {q:"Electrochemistry deals with:",options:["Chemical energy only","Relationship between electrical and chemical energy","Electrical energy only","Nuclear energy"],answer:1,exp:"Electrochemistry studies the relationship between electrical energy and chemical reactions (redox reactions)."},
+        {q:"In an electrolytic cell, oxidation occurs at:",options:["Cathode","Anode","Both electrodes","Electrolyte"],answer:1,exp:"In electrolytic cell: oxidation at anode (connected to positive terminal), reduction at cathode."},
+        {q:"Standard hydrogen electrode has potential:",options:["+1 V","−1 V","0 V","0.5 V"],answer:2,exp:"Standard Hydrogen Electrode (SHE) is assigned E° = 0.00 V by convention. Used as reference electrode."},
+        {q:"Faraday's first law states:",options:["Amount deposited is proportional to current","Amount deposited is proportional to charge passed","Amount deposited is proportional to time","Amount deposited is proportional to voltage"],answer:1,exp:"Faraday's first law: mass deposited (m) ∝ charge passed (Q). m = ZQ = ZIt, where Z is electrochemical equivalent."},
+        {q:"1 Faraday =",options:["96500 C","9650 C","965 C","6.02×10²³ C"],answer:0,exp:"1 Faraday = 96500 C/mol = charge of 1 mole of electrons = Avogadro's number × charge of electron."},
+        {q:"The conductance of a solution increases with:",options:["Decreasing temperature","Decreasing concentration","Increasing dilution","Increasing concentration only"],answer:2,exp:"Molar conductance increases with dilution because more ions are available for conduction as ion-ion interactions decrease."},
+        {q:"EMF of a cell is measured using:",options:["Ammeter","Voltmeter","Potentiometer","Galvanometer"],answer:2,exp:"EMF is accurately measured by potentiometer (null method) because it draws no current from the cell."},
+        {q:"Nernst equation relates EMF to:",options:["Temperature only","Concentration of ions","Both temperature and concentration","Pressure only"],answer:1,exp:"Nernst equation: E = E° - (RT/nF)lnQ relates cell EMF to concentration of reactants and products."},
+        {q:"In a galvanic cell, the salt bridge:",options:["Provides electrons","Maintains electrical neutrality","Produces electricity","Stores electricity"],answer:1,exp:"Salt bridge maintains electrical neutrality by allowing migration of ions between half-cells, completing the circuit."},
+        {q:"Corrosion of iron is an example of:",options:["Electrolysis","Galvanic cell action","Both A and B","Faradaic process"],answer:1,exp:"Corrosion (rusting) is an electrochemical process — iron acts as anode (oxidized) and forms galvanic cells with impurities."},
+      ],
+      3:[
+        {q:"Rate of reaction depends on:",options:["Concentration of reactants","Temperature","Catalyst","All of the above"],answer:3,exp:"Rate of reaction depends on concentration, temperature, catalyst, and nature of reactants."},
+        {q:"The unit of rate constant for first order reaction is:",options:["mol/L/s","1/s","mol/L²/s","L/mol/s"],answer:1,exp:"For first order reaction, rate = k[A]. So k = rate/[A] = (mol/L/s)/(mol/L) = s⁻¹ or 1/s."},
+        {q:"Activation energy is:",options:["Energy released in reaction","Minimum energy needed to start reaction","Energy of products","Energy difference between reactants and products"],answer:1,exp:"Activation energy (Ea) is the minimum energy that colliding molecules must have for a reaction to occur."},
+        {q:"Arrhenius equation is:",options:["k = Ae^(Ea/RT)","k = Ae^(-Ea/RT)","k = A/Ea","k = RT/Ea"],answer:1,exp:"Arrhenius equation: k = Ae^(-Ea/RT), where A is frequency factor, Ea is activation energy, R is gas constant, T is temperature."},
+        {q:"For a zero order reaction, rate =",options:["k[A]","k[A]²","k","k/[A]"],answer:2,exp:"For zero order reaction, rate = k (constant). Rate is independent of reactant concentration."},
+        {q:"Half life of first order reaction is:",options:["0.693/k","k/0.693","0.693×k","1/k"],answer:0,exp:"t½ = 0.693/k for first order reactions. It's independent of initial concentration — unique feature of first order."},
+        {q:"A catalyst increases reaction rate by:",options:["Increasing activation energy","Decreasing activation energy","Increasing temperature","Changing equilibrium position"],answer:1,exp:"A catalyst provides an alternative pathway with lower activation energy, increasing the rate without being consumed."},
+        {q:"The order of reaction is determined by:",options:["Stoichiometry","Experiment","Both","Mechanism only"],answer:1,exp:"Order of reaction is determined experimentally. It may or may not match stoichiometric coefficients."},
+        {q:"Molecularity of a reaction is:",options:["Always equal to order","Number of molecules in rate-determining step","Determined by experiment","Can be fractional"],answer:1,exp:"Molecularity = number of molecules/ions participating in elementary step. Always a whole number (1, 2, or rarely 3)."},
+        {q:"For a reaction, if concentration doubles and rate quadruples, the order is:",options:["1","2","3","0"],answer:1,exp:"Rate = k[A]ⁿ. If [A] doubles, rate = k(2[A])ⁿ = 2ⁿ × rate. 2ⁿ = 4 means n = 2. Second order."},
+      ],
+      10:[
+        {q:"Which of the following is a carbohydrate?",options:["Insulin","Glucose","Haemoglobin","Cholesterol"],answer:1,exp:"Glucose (C₆H₁₂O₆) is a monosaccharide carbohydrate. Insulin is protein, haemoglobin is protein, cholesterol is lipid."},
+        {q:"The monomer of proteins is:",options:["Glucose","Fatty acids","Amino acids","Nucleotides"],answer:2,exp:"Proteins are polymers of amino acids joined by peptide bonds. There are 20 standard amino acids."},
+        {q:"DNA contains which sugar?",options:["Ribose","Deoxyribose","Glucose","Fructose"],answer:1,exp:"DNA contains deoxyribose sugar (2'-deoxyribose). RNA contains ribose sugar."},
+        {q:"Enzymes are:",options:["Lipids","Carbohydrates","Biological catalysts (proteins)","Nucleic acids"],answer:2,exp:"Enzymes are biological catalysts made of proteins. They speed up biochemical reactions without being consumed."},
+        {q:"The linkage between amino acids in proteins is called:",options:["Glycosidic bond","Peptide bond","Ester bond","Hydrogen bond"],answer:1,exp:"Peptide bond (−CO−NH−) forms between carboxyl group of one amino acid and amino group of another, releasing water."},
+        {q:"Which vitamin is synthesized by our body in sunlight?",options:["Vitamin A","Vitamin B","Vitamin C","Vitamin D"],answer:3,exp:"Vitamin D is synthesized in skin when exposed to UV radiation from sunlight. Deficiency causes rickets."},
+        {q:"The double helix structure of DNA was proposed by:",options:["Mendel and Morgan","Watson and Crick","Pauling and Corey","Franklin and Wilkins"],answer:1,exp:"James Watson and Francis Crick proposed the double helix structure of DNA in 1953, based on X-ray data."},
+        {q:"Sucrose is a:",options:["Monosaccharide","Disaccharide","Polysaccharide","Trisaccharide"],answer:1,exp:"Sucrose (table sugar) is a disaccharide made of glucose + fructose joined by glycosidic bond."},
+        {q:"Which of the following is a fat-soluble vitamin?",options:["Vitamin C","Vitamin B complex","Vitamin A","All vitamins"],answer:2,exp:"Fat-soluble vitamins: A, D, E, K. Water-soluble: B complex and C. Vitamin A is stored in liver."},
+        {q:"Nucleotides consist of:",options:["Sugar + base","Sugar + phosphate","Sugar + base + phosphate","Base + phosphate"],answer:2,exp:"A nucleotide = nitrogenous base + pentose sugar + phosphate group. Nucleotides are monomers of DNA and RNA."},
+      ],
+    };
+
+    let currentChapter=null,questions=[],currentQ=0,score=0,timer=null,timeLeft=20,answered=false;
+
+    function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+    function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function showError(msg){const box=document.getElementById('errorBox');document.getElementById('errorMsg').textContent=msg;box.style.display='block';}
+    function getBackup(num){if(BACKUP[num])return shuffle(BACKUP[num]).slice(0,10);return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];}
+
+    async function fetchQuestions(chapter){
+      try{
+        const res=await fetch('/.netlify/functions/ask-groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chapter:chapter.num,chapterName:chapter.name,subject:'Chemistry',classNum:'12'})});
+        const data=await res.json();
+        if(data.questions&&data.questions.length>=5)return data.questions;
+        throw new Error('Invalid response');
+      }catch(err){
+        console.warn('Netlify function failed:',err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer(){clearInterval(timer);timeLeft=20;updateTimerDisplay();timer=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timer);timeUp();}},1000);}
+    function updateTimerDisplay(){const el=document.getElementById('timerCircle');el.textContent=timeLeft;el.className='timer-circle';if(timeLeft<=5)el.classList.add('danger');else if(timeLeft<=10)el.classList.add('warning');}
+    function timeUp(){if(!answered){answered=true;revealAnswer(-1);}}
+
+    function loadQuestion(){
+      if(currentQ>=questions.length){showResults();return;}
+      answered=false;
+      const q=questions[currentQ];
+      document.getElementById('qNum').textContent=currentQ+1;
+      document.getElementById('qTotal').textContent=questions.length;
+      document.getElementById('scoreDisplay').textContent=score;
+      document.getElementById('questionChapter').textContent=`Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent=q.q;
+      document.getElementById('progressBar').style.width=`${(currentQ/questions.length)*100}%`;
+      const grid=document.getElementById('optionsGrid');
+      grid.innerHTML='';
+      ['A','B','C','D'].forEach((label,i)=>{
+        if(!q.options[i])return;
+        const btn=document.createElement('button');
+        btn.className='option-btn';
+        btn.innerHTML=`<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick=()=>selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      document.getElementById('explanationBox').style.display='none';
+      document.getElementById('explanationBox').className='explanation-box';
+      document.getElementById('nextBtn').style.display='none';
+      startTimer();
+    }
+
+    function selectAnswer(idx){if(answered)return;answered=true;clearInterval(timer);revealAnswer(idx);}
+
+    function revealAnswer(selected){
+      const q=questions[currentQ];
+      const btns=document.querySelectorAll('.option-btn');
+      const isCorrect=selected===q.answer;
+      if(isCorrect)score++;
+      btns.forEach((btn,i)=>{btn.disabled=true;if(i===q.answer)btn.classList.add('correct');else if(i===selected)btn.classList.add('wrong');});
+      const expBox=document.getElementById('explanationBox');
+      expBox.style.display='block';
+      expBox.className=`explanation-box ${isCorrect?'correct-exp':'wrong-exp'}`;
+      expBox.innerHTML=isCorrect?`✅ <strong>Correct!</strong> ${q.exp}`:`❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display='block';
+      document.getElementById('scoreDisplay').textContent=score;
+    }
+
+    function nextQuestion(){currentQ++;loadQuestion();}
+
+    function showResults(){
+      clearInterval(timer);
+      const total=questions.length,wrong=total-score,percent=Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent=score;
+      document.getElementById('finalTotal').textContent=total;
+      document.getElementById('statCorrect').textContent=score;
+      document.getElementById('statWrong').textContent=wrong;
+      document.getElementById('statPercent').textContent=percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Chemistry 12 genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='Board exam ready!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Practice makes perfect!';}
+      document.getElementById('resultsEmoji').textContent=emoji;
+      document.getElementById('resultsTitle').textContent=title;
+      document.getElementById('resultsSubtitle').textContent=subtitle;
+      document.getElementById('progressBar').style.width='100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame(){startGame(currentChapter);}
+
+    async function startGame(chapter){
+      currentChapter=chapter;score=0;currentQ=0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent=`Chapter ${chapter.num}: ${chapter.name}`;
+      questions=await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init(){
+      const grid=document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch=>{
+        const btn=document.createElement('button');
+        btn.className='chapter-btn';
+        btn.innerHTML=`<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick=()=>startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>

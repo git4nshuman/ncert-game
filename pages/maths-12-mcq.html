@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maths 12 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(255,159,69,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(255,159,69,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--maths); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--maths); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--maths); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--maths); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--maths),#ff6b6b); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--maths); background:rgba(255,159,69,0.12); border:1px solid rgba(255,159,69,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(255,159,69,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--maths); color:#000; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,159,69,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--maths); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--maths); color:#000; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,159,69,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a><span>/</span>
+        <a href="science-12.html" style="color:var(--text-muted);">Science 12</a><span>/</span>
+        <span style="color:var(--maths);">Maths MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(255,159,69,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">📐</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Mathematics · Class 12 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big"><span id="finalScore">0</span><span class="out-of">/ <span id="finalTotal">10</span></span></div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat"><div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div><div class="rs-label">Correct</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--economics)" id="statWrong">0</div><div class="rs-label">Wrong</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div><div class="rs-label">Score</div></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-12.html" class="btn-back">← Back to Science 12</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      {num:1,name:'Relations and Functions'},
+      {num:2,name:'Inverse Trigonometric Functions'},
+      {num:3,name:'Matrices'},
+      {num:4,name:'Determinants'},
+      {num:5,name:'Continuity and Differentiability'},
+      {num:6,name:'Application of Derivatives'},
+      {num:7,name:'Integrals'},
+      {num:8,name:'Application of Integrals'},
+      {num:9,name:'Differential Equations'},
+      {num:10,name:'Vector Algebra'},
+      {num:11,name:'Three Dimensional Geometry'},
+      {num:12,name:'Linear Programming'},
+      {num:13,name:'Probability'},
+    ];
+
+    const BACKUP = {
+      3:[
+        {q:"A matrix with equal number of rows and columns is called:",options:["Row matrix","Column matrix","Square matrix","Rectangular matrix"],answer:2,exp:"A square matrix has equal number of rows and columns (n×n). Example: 2×2, 3×3 matrices."},
+        {q:"The transpose of a matrix A is denoted by:",options:["A⁻¹","A'or Aᵀ","|A|","adj A"],answer:1,exp:"Transpose A' (or Aᵀ) is obtained by interchanging rows and columns of A. (A')ᵢⱼ = Aⱼᵢ"},
+        {q:"A matrix is called symmetric if:",options:["A = -A'","A = A'","A = A⁻¹","A² = A"],answer:1,exp:"A symmetric matrix satisfies A = A' (A equals its transpose). Diagonal elements can be anything."},
+        {q:"The identity matrix I satisfies:",options:["AI = 0","AI = A","AI = I","AI = A²"],answer:1,exp:"For any matrix A, AI = IA = A. The identity matrix acts like multiplication by 1."},
+        {q:"Order of matrix resulting from multiplication of m×n and n×p matrices is:",options:["m×p","n×n","m×n","n×p"],answer:0,exp:"Product of m×n and n×p matrices has order m×p. Inner dimensions (n) must match."},
+        {q:"A null matrix has all elements equal to:",options:["1","-1","0","∞"],answer:2,exp:"A null (zero) matrix has all elements equal to 0. It is the additive identity for matrices."},
+        {q:"Matrix multiplication is:",options:["Commutative","Associative but not commutative","Commutative and associative","Neither"],answer:1,exp:"Matrix multiplication is associative: A(BC) = (AB)C, but NOT commutative: AB ≠ BA in general."},
+        {q:"A skew-symmetric matrix satisfies:",options:["A = A'","A = -A'","A² = I","A = A⁻¹"],answer:1,exp:"Skew-symmetric matrix: A = -A'. All diagonal elements must be zero. Aᵢᵢ = -Aᵢᵢ implies Aᵢᵢ = 0."},
+        {q:"(AB)' equals:",options:["A'B'","B'A'","AB","(BA)'"],answer:1,exp:"(AB)' = B'A' — transpose of product = product of transposes in REVERSE order."},
+        {q:"A diagonal matrix has non-zero elements only:",options:["In first row","In last column","On main diagonal","Everywhere"],answer:2,exp:"A diagonal matrix has non-zero elements only on the main diagonal (top-left to bottom-right). Off-diagonal = 0."},
+      ],
+      5:[
+        {q:"A function f is continuous at x = a if:",options:["f(a) exists","lim f(x) as x→a exists","Both exist and are equal","f is differentiable at a"],answer:2,exp:"f is continuous at x=a if: (1) f(a) exists, (2) lim(x→a) f(x) exists, (3) they are equal."},
+        {q:"d/dx(sin x) =",options:["cos x","-cos x","sin x","-sin x"],answer:0,exp:"d/dx(sin x) = cos x. This is a fundamental derivative. Remember: sin differentiates to cos."},
+        {q:"d/dx(eˣ) =",options:["eˣ⁻¹","xeˣ⁻¹","eˣ","xe^x"],answer:2,exp:"d/dx(eˣ) = eˣ. The exponential function is its own derivative — unique property of e."},
+        {q:"Chain rule states d/dx[f(g(x))] =",options:["f'(x)·g'(x)","f'(g(x))·g'(x)","f(g'(x))","f'(g(x))"],answer:1,exp:"Chain rule: d/dx[f(g(x))] = f'(g(x))·g'(x). Differentiate outer function × derivative of inner function."},
+        {q:"d/dx(ln x) =",options:["1/x","ln x","x","e/x"],answer:0,exp:"d/dx(ln x) = 1/x for x > 0. Natural log differentiates to reciprocal."},
+        {q:"Rolle's theorem requires the function to be:",options:["Continuous on [a,b] only","Differentiable on (a,b) only","Continuous on [a,b] and differentiable on (a,b) with f(a)=f(b)","Monotonic"],answer:2,exp:"Rolle's theorem: f continuous on [a,b], differentiable on (a,b), f(a)=f(b) → ∃ c∈(a,b) where f'(c)=0."},
+        {q:"d/dx(xⁿ) =",options:["xⁿ⁻¹","nxⁿ⁻¹","nxⁿ","nxⁿ⁺¹"],answer:1,exp:"Power rule: d/dx(xⁿ) = nxⁿ⁻¹. Bring down the power, reduce exponent by 1."},
+        {q:"If y = uv, then dy/dx =",options:["u(dv/dx)","v(du/dx)","u(dv/dx) + v(du/dx)","u(dv/dx) - v(du/dx)"],answer:2,exp:"Product rule: d/dx(uv) = u·dv/dx + v·du/dx. Both terms must be included."},
+        {q:"d/dx(cos x) =",options:["sin x","-sin x","cos x","-cos x"],answer:1,exp:"d/dx(cos x) = -sin x. Note the negative sign — cos differentiates to negative sin."},
+        {q:"A function is differentiable at a point if:",options:["It is continuous there","Left and right derivatives exist and are equal","It has no maximum or minimum","Its graph is a straight line"],answer:1,exp:"Differentiability requires left-hand derivative = right-hand derivative at that point. Differentiable → continuous (not vice versa)."},
+      ],
+      7:[
+        {q:"∫xⁿ dx =",options:["xⁿ⁺¹ + C","xⁿ⁺¹/(n+1) + C","nxⁿ⁻¹ + C","xⁿ/n + C"],answer:1,exp:"∫xⁿ dx = xⁿ⁺¹/(n+1) + C (for n ≠ -1). This is the power rule for integration."},
+        {q:"∫(1/x) dx =",options:["x + C","ln|x| + C","1/x² + C","eˣ + C"],answer:1,exp:"∫(1/x) dx = ln|x| + C. This is why ln x differentiates to 1/x."},
+        {q:"∫eˣ dx =",options:["eˣ⁺¹/(x+1) + C","xeˣ + C","eˣ + C","e^(x+1) + C"],answer:2,exp:"∫eˣ dx = eˣ + C. The exponential function integrates to itself."},
+        {q:"∫sin x dx =",options:["cos x + C","-cos x + C","sin x + C","-sin x + C"],answer:1,exp:"∫sin x dx = -cos x + C. Check: d/dx(-cos x) = sin x ✓"},
+        {q:"∫cos x dx =",options:["sin x + C","-sin x + C","cos x + C","-cos x + C"],answer:0,exp:"∫cos x dx = sin x + C. Check: d/dx(sin x) = cos x ✓"},
+        {q:"Integration by parts formula is:",options:["∫uv dx = u∫v dx - ∫v dx","∫uv dx = u∫v dx - ∫(du/dx·∫v dx)dx","∫uv dx = uv - ∫vu","∫uv dx = u'v' + C"],answer:1,exp:"Integration by parts: ∫u(dv/dx)dx = uv - ∫v(du/dx)dx. Choose u using ILATE rule."},
+        {q:"The constant of integration C is added because:",options:["Integration is approximate","Derivative of constant is zero","Integration is reversible","None of these"],answer:1,exp:"C is added because d/dx(C) = 0. Many functions with different constants have the same derivative."},
+        {q:"∫sec²x dx =",options:["sec x tan x + C","tan x + C","2sec x + C","sec²x/2 + C"],answer:1,exp:"∫sec²x dx = tan x + C. Check: d/dx(tan x) = sec²x ✓"},
+        {q:"Definite integral ∫ₐᵇf(x)dx represents:",options:["Slope of curve","Area under curve from a to b","Maximum value","Derivative at midpoint"],answer:1,exp:"Definite integral ∫ₐᵇf(x)dx gives the net signed area between the curve y=f(x) and x-axis from x=a to x=b."},
+        {q:"∫(1/(1+x²)) dx =",options:["ln(1+x²) + C","tan⁻¹x + C","sin⁻¹x + C","cot⁻¹x + C"],answer:1,exp:"∫1/(1+x²) dx = tan⁻¹x + C. This is a standard result. Check: d/dx(tan⁻¹x) = 1/(1+x²) ✓"},
+      ],
+      13:[
+        {q:"P(A|B) represents:",options:["P(A) × P(B)","P(A∩B)/P(B)","P(A∪B)","P(B|A)"],answer:1,exp:"Conditional probability P(A|B) = P(A∩B)/P(B). Probability of A given B has already occurred."},
+        {q:"Bayes' theorem is used to find:",options:["P(A∩B)","P(A∪B)","P(A|B) when P(B|A) is known","P(A) from P(B)"],answer:2,exp:"Bayes' theorem: P(A|B) = P(B|A)·P(A)/P(B). Used to update probability based on new information."},
+        {q:"For independent events A and B:",options:["P(A∩B) = P(A)+P(B)","P(A∩B) = P(A)·P(B)","P(A∩B) = 0","P(A|B) = P(B)"],answer:1,exp:"For independent events: P(A∩B) = P(A)·P(B). Occurrence of one doesn't affect probability of other."},
+        {q:"In a Binomial distribution B(n,p), mean is:",options:["np","np(1-p)","n/p","p/n"],answer:0,exp:"Mean of Binomial distribution = np, where n is number of trials and p is probability of success."},
+        {q:"Variance of Binomial distribution B(n,p) is:",options:["np","np(1-p)","np²","n²p"],answer:1,exp:"Variance of Binomial distribution = np(1-p) = npq, where q = 1-p is probability of failure."},
+        {q:"Total probability theorem states P(B) =",options:["ΣP(B|Aᵢ)","ΣP(Aᵢ)·P(B|Aᵢ)","P(B|A)·P(A)","ΣP(B∩Aᵢ)/P(Aᵢ)"],answer:1,exp:"Total Probability: P(B) = ΣP(Aᵢ)·P(B|Aᵢ) where A₁,A₂... are mutually exclusive and exhaustive events."},
+        {q:"A random variable X has expected value:",options:["ΣX","ΣXP(X)","ΣP(X)","Max value of X"],answer:1,exp:"Expected value E(X) = ΣxᵢP(xᵢ). It's the weighted average of all possible values."},
+        {q:"If P(A) = 0.4, P(B) = 0.3, P(A∩B) = 0.12, then A and B are:",options:["Mutually exclusive","Independent","Dependent","Complementary"],answer:1,exp:"Check: P(A)×P(B) = 0.4×0.3 = 0.12 = P(A∩B). Since P(A∩B) = P(A)·P(B), they are independent."},
+        {q:"P(A∪B) = P(A) + P(B) only when:",options:["A and B are independent","A and B are mutually exclusive","A and B are exhaustive","Always"],answer:1,exp:"P(A∪B) = P(A) + P(B) only when A and B are mutually exclusive (P(A∩B) = 0)."},
+        {q:"Standard deviation of Binomial distribution is:",options:["np","√(npq)","npq","√(np)"],answer:1,exp:"Standard deviation = √(Variance) = √(npq) for Binomial distribution B(n,p) where q = 1-p."},
+      ],
+    };
+
+    let currentChapter=null,questions=[],currentQ=0,score=0,timer=null,timeLeft=20,answered=false;
+
+    function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+    function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function showError(msg){const box=document.getElementById('errorBox');document.getElementById('errorMsg').textContent=msg;box.style.display='block';}
+    function getBackup(num){if(BACKUP[num])return shuffle(BACKUP[num]).slice(0,10);return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];}
+
+    async function fetchQuestions(chapter){
+      try{
+        const res=await fetch('/.netlify/functions/ask-groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chapter:chapter.num,chapterName:chapter.name,subject:'Mathematics',classNum:'12'})});
+        const data=await res.json();
+        if(data.questions&&data.questions.length>=5)return data.questions;
+        throw new Error('Invalid response');
+      }catch(err){
+        console.warn('Netlify function failed:',err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer(){clearInterval(timer);timeLeft=20;updateTimerDisplay();timer=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timer);timeUp();}},1000);}
+    function updateTimerDisplay(){const el=document.getElementById('timerCircle');el.textContent=timeLeft;el.className='timer-circle';if(timeLeft<=5)el.classList.add('danger');else if(timeLeft<=10)el.classList.add('warning');}
+    function timeUp(){if(!answered){answered=true;revealAnswer(-1);}}
+
+    function loadQuestion(){
+      if(currentQ>=questions.length){showResults();return;}
+      answered=false;
+      const q=questions[currentQ];
+      document.getElementById('qNum').textContent=currentQ+1;
+      document.getElementById('qTotal').textContent=questions.length;
+      document.getElementById('scoreDisplay').textContent=score;
+      document.getElementById('questionChapter').textContent=`Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent=q.q;
+      document.getElementById('progressBar').style.width=`${(currentQ/questions.length)*100}%`;
+      const grid=document.getElementById('optionsGrid');
+      grid.innerHTML='';
+      ['A','B','C','D'].forEach((label,i)=>{
+        if(!q.options[i])return;
+        const btn=document.createElement('button');
+        btn.className='option-btn';
+        btn.innerHTML=`<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick=()=>selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      document.getElementById('explanationBox').style.display='none';
+      document.getElementById('explanationBox').className='explanation-box';
+      document.getElementById('nextBtn').style.display='none';
+      startTimer();
+    }
+
+    function selectAnswer(idx){if(answered)return;answered=true;clearInterval(timer);revealAnswer(idx);}
+
+    function revealAnswer(selected){
+      const q=questions[currentQ];
+      const btns=document.querySelectorAll('.option-btn');
+      const isCorrect=selected===q.answer;
+      if(isCorrect)score++;
+      btns.forEach((btn,i)=>{btn.disabled=true;if(i===q.answer)btn.classList.add('correct');else if(i===selected)btn.classList.add('wrong');});
+      const expBox=document.getElementById('explanationBox');
+      expBox.style.display='block';
+      expBox.className=`explanation-box ${isCorrect?'correct-exp':'wrong-exp'}`;
+      expBox.innerHTML=isCorrect?`✅ <strong>Correct!</strong> ${q.exp}`:`❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display='block';
+      document.getElementById('scoreDisplay').textContent=score;
+    }
+
+    function nextQuestion(){currentQ++;loadQuestion();}
+
+    function showResults(){
+      clearInterval(timer);
+      const total=questions.length,wrong=total-score,percent=Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent=score;
+      document.getElementById('finalTotal').textContent=total;
+      document.getElementById('statCorrect').textContent=score;
+      document.getElementById('statWrong').textContent=wrong;
+      document.getElementById('statPercent').textContent=percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Maths 12 genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='Board exam ready!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Maths takes practice!';}
+      document.getElementById('resultsEmoji').textContent=emoji;
+      document.getElementById('resultsTitle').textContent=title;
+      document.getElementById('resultsSubtitle').textContent=subtitle;
+      document.getElementById('progressBar').style.width='100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame(){startGame(currentChapter);}
+
+    async function startGame(chapter){
+      currentChapter=chapter;score=0;currentQ=0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent=`Chapter ${chapter.num}: ${chapter.name}`;
+      questions=await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init(){
+      const grid=document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch=>{
+        const btn=document.createElement('button');
+        btn.className='chapter-btn';
+        btn.innerHTML=`<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick=()=>startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>

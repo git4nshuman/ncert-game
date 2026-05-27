@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biology 12 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(86,207,145,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(86,207,145,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--biology); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--biology); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--biology); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--biology); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--biology),#00e5ff); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--biology); background:rgba(86,207,145,0.12); border:1px solid rgba(86,207,145,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(86,207,145,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--biology); color:#000; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(86,207,145,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--biology); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--biology); color:#000; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(86,207,145,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science" class="active">Science</a></li>
+      <li><a href="../index.html#commerce">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a><span>/</span>
+        <a href="science-12.html" style="color:var(--text-muted);">Science 12</a><span>/</span>
+        <span style="color:var(--biology);">Biology MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(86,207,145,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">🌿</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Biology · Class 12 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big"><span id="finalScore">0</span><span class="out-of">/ <span id="finalTotal">10</span></span></div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat"><div class="rs-num" style="color:var(--biology)" id="statCorrect">0</div><div class="rs-label">Correct</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--economics)" id="statWrong">0</div><div class="rs-label">Wrong</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div><div class="rs-label">Score</div></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="science-12.html" class="btn-back">← Back to Science 12</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      {num:1,name:'Reproduction in Organisms'},
+      {num:2,name:'Sexual Reproduction in Flowering Plants'},
+      {num:3,name:'Human Reproduction'},
+      {num:4,name:'Reproductive Health'},
+      {num:5,name:'Principles of Inheritance and Variation'},
+      {num:6,name:'Molecular Basis of Inheritance'},
+      {num:7,name:'Evolution'},
+      {num:8,name:'Human Health and Disease'},
+      {num:9,name:'Strategies for Enhancement in Food Production'},
+      {num:10,name:'Microbes in Human Welfare'},
+      {num:11,name:'Biotechnology: Principles and Processes'},
+      {num:12,name:'Biotechnology and its Applications'},
+      {num:13,name:'Organisms and Populations'},
+      {num:14,name:'Ecosystem'},
+      {num:15,name:'Biodiversity and Conservation'},
+    ];
+
+    const BACKUP = {
+      5:[
+        {q:"Mendel's law of segregation states that:",options:["Two alleles blend together","Alleles separate during gamete formation","Traits skip generations","All offspring are identical"],answer:1,exp:"Law of Segregation: paired alleles separate during gamete formation. Each gamete gets only one allele of each gene."},
+        {q:"A cross between F1 hybrid and homozygous recessive parent is called:",options:["Monohybrid cross","Dihybrid cross","Test cross","Back cross"],answer:2,exp:"Test cross: crossing F1 hybrid with homozygous recessive (aa) to determine genotype of F1. Ratios reveal genotype."},
+        {q:"The phenotypic ratio in a monohybrid cross F2 generation is:",options:["1:2:1","3:1","1:1","2:1"],answer:1,exp:"Monohybrid F2 phenotypic ratio = 3:1 (dominant:recessive). Genotypic ratio = 1:2:1 (AA:Aa:aa)."},
+        {q:"Codominance is seen in:",options:["Tall vs dwarf pea plants","ABO blood groups","Eye color","Skin color"],answer:1,exp:"In ABO blood groups, IA and IB are codominant — both express equally in AB blood group individuals."},
+        {q:"Haemophilia is a:",options:["Autosomal dominant disorder","Autosomal recessive disorder","X-linked recessive disorder","X-linked dominant disorder"],answer:2,exp:"Haemophilia (bleeding disorder) is X-linked recessive. More common in males (XʰY) than females (XʰXʰ)."},
+        {q:"Down syndrome is caused by trisomy of chromosome:",options:["18","21","13","23"],answer:1,exp:"Down syndrome = trisomy 21 (three copies of chromosome 21). Results from non-disjunction during meiosis."},
+        {q:"The ratio of genotypes in F2 of monohybrid cross is:",options:["3:1","1:2:1","1:1:1:1","2:1:1"],answer:1,exp:"Monohybrid F2 genotypic ratio = 1:2:1 (1 AA : 2 Aa : 1 aa). Phenotypic ratio is 3:1."},
+        {q:"Pleiotropy refers to:",options:["One gene controlling one trait","One gene controlling multiple traits","Multiple genes controlling one trait","No gene controlling traits"],answer:1,exp:"Pleiotropy: one gene affects multiple phenotypic traits. Example: sickle cell anaemia gene affects RBC shape and multiple organs."},
+        {q:"The chromosomal theory of inheritance was proposed by:",options:["Mendel","Sutton and Boveri","Morgan","Watson and Crick"],answer:1,exp:"Sutton and Boveri (1902) proposed chromosomal theory — genes are located on chromosomes, explaining Mendel's laws."},
+        {q:"Colour blindness in humans is:",options:["Autosomal dominant","Autosomal recessive","X-linked recessive","Y-linked"],answer:2,exp:"Colour blindness is X-linked recessive. Females are carriers (XᶜX), males with Xᶜ Y are colour blind."},
+      ],
+      6:[
+        {q:"DNA replication is:",options:["Conservative","Semi-conservative","Dispersive","Non-conservative"],answer:1,exp:"DNA replication is semi-conservative — each new DNA has one original strand and one new strand (proven by Meselson & Stahl)."},
+        {q:"The enzyme that unwinds DNA double helix is:",options:["DNA polymerase","Ligase","Helicase","Primase"],answer:2,exp:"Helicase unwinds and separates the two strands of DNA double helix at the replication fork."},
+        {q:"The central dogma of molecular biology is:",options:["DNA → RNA → Protein","Protein → RNA → DNA","RNA → DNA → Protein","DNA → Protein → RNA"],answer:0,exp:"Central dogma (Francis Crick): DNA → (transcription) → RNA → (translation) → Protein. Information flows in this direction."},
+        {q:"mRNA is synthesized during:",options:["Translation","Replication","Transcription","Splicing"],answer:2,exp:"During transcription, RNA polymerase synthesizes mRNA using DNA as template. mRNA carries genetic code to ribosomes."},
+        {q:"The process of converting mRNA to protein is called:",options:["Transcription","Replication","Translation","Transduction"],answer:2,exp:"Translation: mRNA sequence is read by ribosomes (with tRNA) to synthesize proteins. Occurs in cytoplasm."},
+        {q:"A codon consists of how many nucleotides?",options:["1","2","3","4"],answer:2,exp:"A codon is a triplet of 3 nucleotides in mRNA that codes for one amino acid. There are 64 codons (4³ = 64)."},
+        {q:"The start codon in mRNA is:",options:["UAA","UAG","AUG","UGA"],answer:2,exp:"AUG (methionine) is the universal start codon. It signals ribosomes to begin translation. Also codes for methionine."},
+        {q:"Lac operon is an example of:",options:["Positive regulation","Negative regulation","Post-translational regulation","RNA processing"],answer:1,exp:"Lac operon (Jacob & Monod) is negatively regulated — repressor protein blocks transcription unless lactose is present."},
+        {q:"The Human Genome Project was completed in:",options:["1990","2000","2003","2010"],answer:2,exp:"The Human Genome Project was completed in 2003. It mapped all ~3 billion base pairs and ~20,000-25,000 genes."},
+        {q:"Non-coding sequences in eukaryotic genes are called:",options:["Exons","Introns","Codons","Promoters"],answer:1,exp:"Introns are non-coding intervening sequences in eukaryotic genes. They are removed during RNA processing (splicing)."},
+      ],
+      7:[
+        {q:"The theory of natural selection was proposed by:",options:["Lamarck","Mendel","Darwin","de Vries"],answer:2,exp:"Charles Darwin proposed natural selection (1859) in 'Origin of Species' — organisms better adapted to environment survive and reproduce."},
+        {q:"The age of earth is approximately:",options:["4.5 million years","4.5 billion years","45 billion years","450 million years"],answer:1,exp:"Earth is approximately 4.5 billion years old. Life appeared about 3.5-4 billion years ago."},
+        {q:"Miller and Urey experiment demonstrated:",options:["Origin of DNA","Synthesis of organic molecules from inorganic compounds","Evolution of humans","Formation of cells"],answer:1,exp:"Miller-Urey (1953) experiment: electric sparks through mixture of CH₄, NH₃, H₂, H₂O produced amino acids and organic molecules."},
+        {q:"Analogous organs are:",options:["Similar in structure, different in function","Different in structure, similar in function","Same in structure and function","Different in both"],answer:1,exp:"Analogous organs: different structure, same function (convergent evolution). Example: wings of birds and insects."},
+        {q:"Homologous organs provide evidence for:",options:["Convergent evolution","Divergent evolution","Parallel evolution","Artificial selection"],answer:1,exp:"Homologous organs (same structure, different function) show divergent evolution from common ancestor. Example: forelimbs of vertebrates."},
+        {q:"Industrial melanism is an example of:",options:["Mutation","Natural selection","Genetic drift","Gene flow"],answer:1,exp:"Industrial melanism (dark peppered moths increasing near industrial areas) is classic example of natural selection in action."},
+        {q:"The concept of survival of the fittest was given by:",options:["Darwin","Herbert Spencer","Lamarck","Wallace"],answer:1,exp:"Herbert Spencer coined 'survival of the fittest' to describe Darwin's natural selection. Darwin himself used 'natural selection'."},
+        {q:"Genetic drift is significant in:",options:["Large populations","Small populations","All populations equally","No populations"],answer:1,exp:"Genetic drift (random changes in allele frequency) is significant in small populations where chance events have large effects."},
+        {q:"Which of the following is correct about evolution?",options:["It is directed towards perfection","It acts on individuals","It has no direction or goal","It always produces complex organisms"],answer:2,exp:"Evolution has no predetermined direction or goal. It's driven by natural selection acting on random variations."},
+        {q:"Fossils provide evidence for evolution because:",options:["They are old","They show extinct organisms","They reveal history of life and transitional forms","They are found everywhere"],answer:2,exp:"Fossils show history of life on Earth, including extinct organisms and transitional forms linking different groups."},
+      ],
+      11:[
+        {q:"Recombinant DNA technology involves:",options:["Combining DNA from different sources","Replicating DNA","Transcribing DNA","Translating DNA"],answer:0,exp:"Recombinant DNA technology (genetic engineering): combining DNA from different sources to create new combinations of genes."},
+        {q:"Restriction enzymes are also called:",options:["Molecular scissors","Molecular glue","Molecular motors","Molecular probes"],answer:0,exp:"Restriction endonucleases (restriction enzymes) are called 'molecular scissors' — they cut DNA at specific recognition sequences."},
+        {q:"A plasmid is:",options:["Linear chromosomal DNA","Circular extra-chromosomal DNA in bacteria","RNA molecule","Protein"],answer:1,exp:"Plasmids are small, circular, self-replicating extra-chromosomal DNA in bacteria. Used as vectors in genetic engineering."},
+        {q:"PCR stands for:",options:["Protein Chain Reaction","Polymerase Chain Reaction","Phosphate Chain Reaction","Polymer Chain Reaction"],answer:1,exp:"PCR (Polymerase Chain Reaction) — technique to amplify specific DNA sequences millions of times in vitro."},
+        {q:"Gel electrophoresis separates DNA fragments based on:",options:["Color","Size and charge","Temperature","pH"],answer:1,exp:"Gel electrophoresis separates DNA fragments by size — smaller fragments move faster through agarose gel under electric field."},
+        {q:"The first recombinant DNA was created by:",options:["Watson and Crick","Cohen and Boyer","Mullis","Berg"],answer:1,exp:"Stanley Cohen and Herbert Boyer created the first recombinant DNA in 1973 by combining DNA from two different organisms."},
+        {q:"A gene gun is used for:",options:["Sequencing DNA","Biolistic transformation of plants","Cloning animals","Making PCR"],answer:1,exp:"Gene gun (biolistic method) shoots DNA-coated gold/tungsten particles into plant cells — a method of plant transformation."},
+        {q:"Which enzyme joins DNA fragments together?",options:["Helicase","Restriction enzyme","DNA ligase","Primase"],answer:2,exp:"DNA ligase is the 'molecular glue' that joins (ligates) DNA fragments together by forming phosphodiester bonds."},
+        {q:"The Ti plasmid used in plant transformation comes from:",options:["E. coli","Agrobacterium tumefaciens","Bacillus thuringiensis","Rhizobium"],answer:1,exp:"Ti (tumor-inducing) plasmid from Agrobacterium tumefaciens is used as vector to introduce foreign genes into plant cells."},
+        {q:"Competent cells in transformation are:",options:["Dead cells","Cells capable of taking up foreign DNA","Cells with mutations","Cells without DNA"],answer:1,exp:"Competent cells are bacterial cells made capable of taking up foreign DNA, either naturally or by chemical/physical treatment."},
+      ],
+    };
+
+    let currentChapter=null,questions=[],currentQ=0,score=0,timer=null,timeLeft=20,answered=false;
+
+    function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+    function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function showError(msg){const box=document.getElementById('errorBox');document.getElementById('errorMsg').textContent=msg;box.style.display='block';}
+    function getBackup(num){if(BACKUP[num])return shuffle(BACKUP[num]).slice(0,10);return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];}
+
+    async function fetchQuestions(chapter){
+      try{
+        const res=await fetch('/.netlify/functions/ask-groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chapter:chapter.num,chapterName:chapter.name,subject:'Biology',classNum:'12'})});
+        const data=await res.json();
+        if(data.questions&&data.questions.length>=5)return data.questions;
+        throw new Error('Invalid response');
+      }catch(err){
+        console.warn('Netlify function failed:',err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer(){clearInterval(timer);timeLeft=20;updateTimerDisplay();timer=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timer);timeUp();}},1000);}
+    function updateTimerDisplay(){const el=document.getElementById('timerCircle');el.textContent=timeLeft;el.className='timer-circle';if(timeLeft<=5)el.classList.add('danger');else if(timeLeft<=10)el.classList.add('warning');}
+    function timeUp(){if(!answered){answered=true;revealAnswer(-1);}}
+
+    function loadQuestion(){
+      if(currentQ>=questions.length){showResults();return;}
+      answered=false;
+      const q=questions[currentQ];
+      document.getElementById('qNum').textContent=currentQ+1;
+      document.getElementById('qTotal').textContent=questions.length;
+      document.getElementById('scoreDisplay').textContent=score;
+      document.getElementById('questionChapter').textContent=`Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent=q.q;
+      document.getElementById('progressBar').style.width=`${(currentQ/questions.length)*100}%`;
+      const grid=document.getElementById('optionsGrid');
+      grid.innerHTML='';
+      ['A','B','C','D'].forEach((label,i)=>{
+        if(!q.options[i])return;
+        const btn=document.createElement('button');
+        btn.className='option-btn';
+        btn.innerHTML=`<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick=()=>selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      document.getElementById('explanationBox').style.display='none';
+      document.getElementById('explanationBox').className='explanation-box';
+      document.getElementById('nextBtn').style.display='none';
+      startTimer();
+    }
+
+    function selectAnswer(idx){if(answered)return;answered=true;clearInterval(timer);revealAnswer(idx);}
+
+    function revealAnswer(selected){
+      const q=questions[currentQ];
+      const btns=document.querySelectorAll('.option-btn');
+      const isCorrect=selected===q.answer;
+      if(isCorrect)score++;
+      btns.forEach((btn,i)=>{btn.disabled=true;if(i===q.answer)btn.classList.add('correct');else if(i===selected)btn.classList.add('wrong');});
+      const expBox=document.getElementById('explanationBox');
+      expBox.style.display='block';
+      expBox.className=`explanation-box ${isCorrect?'correct-exp':'wrong-exp'}`;
+      expBox.innerHTML=isCorrect?`✅ <strong>Correct!</strong> ${q.exp}`:`❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display='block';
+      document.getElementById('scoreDisplay').textContent=score;
+    }
+
+    function nextQuestion(){currentQ++;loadQuestion();}
+
+    function showResults(){
+      clearInterval(timer);
+      const total=questions.length,wrong=total-score,percent=Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent=score;
+      document.getElementById('finalTotal').textContent=total;
+      document.getElementById('statCorrect').textContent=score;
+      document.getElementById('statWrong').textContent=wrong;
+      document.getElementById('statPercent').textContent=percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Biology 12 genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='Board exam ready!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Practice makes perfect!';}
+      document.getElementById('resultsEmoji').textContent=emoji;
+      document.getElementById('resultsTitle').textContent=title;
+      document.getElementById('resultsSubtitle').textContent=subtitle;
+      document.getElementById('progressBar').style.width='100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame(){startGame(currentChapter);}
+
+    async function startGame(chapter){
+      currentChapter=chapter;score=0;currentQ=0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent=`Chapter ${chapter.num}: ${chapter.name}`;
+      questions=await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init(){
+      const grid=document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch=>{
+        const btn=document.createElement('button');
+        btn.className='chapter-btn';
+        btn.innerHTML=`<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick=()=>startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>

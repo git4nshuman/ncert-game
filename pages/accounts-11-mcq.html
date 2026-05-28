@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accountancy 11 — MCQ Blitz | NCERT Game</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .game-wrapper { min-height:100vh; padding:100px 24px 60px; max-width:800px; margin:0 auto; }
+    .screen { display:none; }
+    .screen.active { display:block; animation:fadeUp 0.4s ease both; }
+    .chapter-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; margin-top:32px; }
+    .chapter-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; cursor:pointer; transition:all 0.25s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); }
+    .chapter-btn:hover { background:var(--bg-card-hover); border-color:rgba(78,205,196,0.4); transform:translateY(-3px); box-shadow:0 10px 30px rgba(78,205,196,0.1); }
+    .chapter-btn .ch-num { font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--accounts); margin-bottom:8px; }
+    .chapter-btn .ch-name { font-family:var(--font-display); font-size:0.95rem; font-weight:700; line-height:1.3; }
+    .loading-wrap { text-align:center; padding:80px 20px; }
+    .loading-spinner { width:56px; height:56px; border:3px solid var(--border); border-top-color:var(--accounts); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 24px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-wrap h3 { font-family:var(--font-display); font-size:1.2rem; margin-bottom:8px; }
+    .loading-wrap p { color:var(--text-secondary); font-size:0.9rem; }
+    .game-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); }
+    .game-progress { font-size:0.85rem; color:var(--text-secondary); font-weight:500; }
+    .game-progress span { color:var(--accounts); font-weight:700; }
+    .game-score { font-family:var(--font-display); font-size:1rem; font-weight:700; }
+    .game-score .score-num { color:var(--accounts); }
+    .timer-circle { width:44px; height:44px; border-radius:50%; border:3px solid var(--border); display:grid; place-items:center; font-family:var(--font-display); font-size:1rem; font-weight:800; transition:border-color 0.3s,color 0.3s; }
+    .timer-circle.warning { border-color:#ff9f45; color:#ff9f45; }
+    .timer-circle.danger { border-color:#ff6b6b; color:#ff6b6b; animation:timerPulse 0.5s infinite alternate; }
+    @keyframes timerPulse { from{transform:scale(1);} to{transform:scale(1.1);} }
+    .progress-bar-wrap { height:4px; background:var(--border); border-radius:999px; margin-bottom:32px; overflow:hidden; }
+    .progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--accounts),#00e5ff); border-radius:999px; transition:width 0.4s var(--ease); }
+    .question-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; margin-bottom:24px; }
+    .question-tag { display:inline-block; font-size:0.7rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--accounts); background:rgba(78,205,196,0.12); border:1px solid rgba(78,205,196,0.2); padding:4px 12px; border-radius:999px; margin-bottom:16px; }
+    .question-text { font-family:var(--font-display); font-size:1.15rem; font-weight:700; line-height:1.5; letter-spacing:-0.3px; }
+    .options-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .option-btn { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 20px; cursor:pointer; transition:all 0.2s var(--ease); text-align:left; color:var(--text-primary); font-family:var(--font-body); font-size:0.9rem; line-height:1.4; display:flex; align-items:flex-start; gap:12px; }
+    .option-btn:hover:not(:disabled) { background:var(--bg-card-hover); border-color:rgba(78,205,196,0.4); transform:translateY(-2px); }
+    .option-btn:disabled { cursor:not-allowed; }
+    .option-label { width:24px; height:24px; border-radius:6px; background:var(--bg); border:1px solid var(--border); display:grid; place-items:center; font-size:0.75rem; font-weight:700; flex-shrink:0; transition:all 0.2s; }
+    .option-btn.correct { background:rgba(86,207,145,0.1); border-color:rgba(86,207,145,0.5); animation:correctPop 0.4s var(--ease-spring); }
+    .option-btn.correct .option-label { background:var(--biology); border-color:var(--biology); color:#000; }
+    .option-btn.wrong { background:rgba(255,107,107,0.1); border-color:rgba(255,107,107,0.5); animation:wrongShake 0.4s ease; }
+    .option-btn.wrong .option-label { background:var(--economics); border-color:var(--economics); color:#fff; }
+    @keyframes correctPop { 0%{transform:scale(1);} 50%{transform:scale(1.03);} 100%{transform:scale(1);} }
+    @keyframes wrongShake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+    .explanation-box { margin-top:16px; padding:16px 20px; border-radius:var(--radius-md); font-size:0.88rem; line-height:1.6; display:none; animation:fadeUp 0.3s ease both; }
+    .explanation-box.correct-exp { background:rgba(86,207,145,0.08); border:1px solid rgba(86,207,145,0.2); color:var(--biology); }
+    .explanation-box.wrong-exp { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); color:#ff9999; }
+    .next-btn { width:100%; margin-top:20px; padding:16px; border-radius:var(--radius-md); background:var(--accounts); color:#000; font-family:var(--font-display); font-size:1rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); display:none; }
+    .next-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(78,205,196,0.3); }
+    .results-wrap { text-align:center; padding:40px 20px; }
+    .results-emoji { font-size:4rem; margin-bottom:16px; animation:bounceIn 0.6s var(--ease-spring); }
+    @keyframes bounceIn { 0%{transform:scale(0);opacity:0;} 60%{transform:scale(1.2);} 100%{transform:scale(1);opacity:1;} }
+    .results-wrap h2 { font-family:var(--font-display); font-size:2rem; font-weight:800; margin-bottom:8px; letter-spacing:-1px; }
+    .results-wrap .subtitle { color:var(--text-secondary); margin-bottom:40px; }
+    .score-big { display:inline-flex; align-items:baseline; gap:4px; font-family:var(--font-display); font-size:5rem; font-weight:800; color:var(--accounts); margin-bottom:8px; line-height:1; }
+    .score-big .out-of { font-size:2rem; color:var(--text-secondary); }
+    .score-label { font-size:0.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:40px; }
+    .results-stats { display:flex; gap:20px; justify-content:center; margin-bottom:40px; flex-wrap:wrap; }
+    .result-stat { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px 28px; min-width:120px; }
+    .result-stat .rs-num { font-family:var(--font-display); font-size:1.8rem; font-weight:800; margin-bottom:4px; }
+    .result-stat .rs-label { font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; }
+    .results-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn-retry { padding:14px 32px; border-radius:999px; background:var(--accounts); color:#000; font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:none; cursor:pointer; transition:all 0.25s var(--ease-spring); }
+    .btn-retry:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(78,205,196,0.3); }
+    .btn-back { padding:14px 32px; border-radius:999px; background:transparent; color:var(--text-secondary); font-family:var(--font-display); font-size:0.95rem; font-weight:700; border:1px solid var(--border); cursor:pointer; transition:all 0.25s var(--ease); text-decoration:none; display:inline-flex; align-items:center; }
+    .btn-back:hover { background:var(--bg-card); color:var(--text-primary); border-color:var(--border-hover); }
+    .error-box { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.2); border-radius:var(--radius-md); padding:20px 24px; margin-top:20px; font-size:0.88rem; color:#ff9999; line-height:1.6; display:none; }
+    @media (max-width:600px) { .options-grid{grid-template-columns:1fr;} .score-big{font-size:3.5rem;} }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../index.html" class="nav-logo">
+      <div class="logo-icon">🎮</div>
+      NCERT<span>Game</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="../index.html#science">Science</a></li>
+      <li><a href="../index.html#commerce" class="active">Commerce</a></li>
+    </ul>
+  </nav>
+
+  <div class="game-wrapper">
+    <div id="screen-select" class="screen active">
+      <div style="display:flex;align-items:center;gap:8px;font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;">
+        <a href="../index.html" style="color:var(--text-muted);">Home</a><span>/</span>
+        <a href="commerce-11.html" style="color:var(--text-muted);">Commerce 11</a><span>/</span>
+        <span style="color:var(--accounts);">Accountancy MCQ Blitz</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+        <div style="width:52px;height:52px;background:rgba(78,205,196,0.15);border-radius:14px;display:grid;place-items:center;font-size:1.5rem;">📒</div>
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-0.5px;">MCQ Blitz</h1>
+          <p style="color:var(--text-secondary);font-size:0.88rem;">Accountancy · Class 11 · 10 questions · 20 sec each</p>
+        </div>
+      </div>
+      <p style="color:var(--text-secondary);margin:20px 0 8px;font-size:0.95rem;">Select a chapter to start:</p>
+      <div class="chapter-grid" id="chapterGrid"></div>
+      <div class="error-box" id="errorBox"><span id="errorMsg"></span></div>
+    </div>
+
+    <div id="screen-loading" class="screen">
+      <div class="loading-wrap">
+        <div class="loading-spinner"></div>
+        <h3>Generating your questions...</h3>
+        <p id="loadingChapter">Preparing content</p>
+      </div>
+    </div>
+
+    <div id="screen-game" class="screen">
+      <div class="game-header">
+        <div class="game-progress">Question <span id="qNum">1</span> of <span id="qTotal">10</span></div>
+        <div class="timer-circle" id="timerCircle">20</div>
+        <div class="game-score">Score: <span class="score-num" id="scoreDisplay">0</span></div>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+      <div class="question-card">
+        <div class="question-tag" id="questionChapter">Chapter</div>
+        <div class="question-text" id="questionText">Loading...</div>
+      </div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="explanationBox"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <div id="screen-results" class="screen">
+      <div class="results-wrap">
+        <div class="results-emoji" id="resultsEmoji">🎉</div>
+        <h2 id="resultsTitle">Great job!</h2>
+        <p class="subtitle" id="resultsSubtitle">Here's how you did</p>
+        <div class="score-big"><span id="finalScore">0</span><span class="out-of">/ <span id="finalTotal">10</span></span></div>
+        <div class="score-label">CORRECT ANSWERS</div>
+        <div class="results-stats">
+          <div class="result-stat"><div class="rs-num" style="color:var(--accounts)" id="statCorrect">0</div><div class="rs-label">Correct</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--economics)" id="statWrong">0</div><div class="rs-label">Wrong</div></div>
+          <div class="result-stat"><div class="rs-num" style="color:var(--maths)" id="statPercent">0%</div><div class="rs-label">Score</div></div>
+        </div>
+        <div class="results-actions">
+          <button class="btn-retry" onclick="retryGame()">🔄 Play Again</button>
+          <a href="commerce-11.html" class="btn-back">← Back to Commerce 11</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CHAPTERS = [
+      {num:1,name:'Introduction to Accounting'},
+      {num:2,name:'Theory Base of Accounting'},
+      {num:3,name:'Recording of Transactions - I'},
+      {num:4,name:'Recording of Transactions - II'},
+      {num:5,name:'Bank Reconciliation Statement'},
+      {num:6,name:'Trial Balance and Rectification of Errors'},
+      {num:7,name:'Depreciation, Provisions and Reserves'},
+      {num:8,name:'Bills of Exchange'},
+      {num:9,name:'Financial Statements - I'},
+      {num:10,name:'Financial Statements - II'},
+      {num:11,name:'Accounts from Incomplete Records'},
+    ];
+
+    const BACKUP = {
+      1:[
+        {q:"Accounting is defined as the art of:",options:["Recording only financial transactions","Recording, classifying and summarizing financial transactions","Managing business finances","Calculating profit and loss only"],answer:1,exp:"Accounting is the art of recording, classifying, summarizing financial transactions and interpreting the results."},
+        {q:"The main objective of accounting is:",options:["To calculate tax","To provide financial information to users","To detect fraud","To prepare payroll"],answer:1,exp:"The main objective of accounting is to provide reliable financial information to various users for decision making."},
+        {q:"Book-keeping is:",options:["Same as accounting","A part of accounting dealing with recording","More than accounting","Analysis of financial data"],answer:1,exp:"Book-keeping is the recording part of accounting. Accounting is broader — it includes recording, classifying, summarizing and interpreting."},
+        {q:"Which of the following is an internal user of accounting information?",options:["Banks","Government","Management","Creditors"],answer:2,exp:"Internal users: management, employees, owners. External users: banks, government, creditors, investors, customers."},
+        {q:"The branch of accounting dealing with cost calculation is:",options:["Financial accounting","Management accounting","Cost accounting","Tax accounting"],answer:2,exp:"Cost accounting deals with recording, analysis and control of costs. It helps in cost calculation and cost control."},
+        {q:"GAAP stands for:",options:["General Accepted Accounting Procedures","Generally Accepted Accounting Principles","Government Authorized Accounting Practices","General Audit and Accounting Principles"],answer:1,exp:"GAAP = Generally Accepted Accounting Principles. These are standard rules and guidelines for accounting."},
+        {q:"The person who owes money to the business is called:",options:["Creditor","Debtor","Investor","Shareholder"],answer:1,exp:"A debtor is a person who owes money to the business (has taken goods/services on credit). Creditor is the opposite."},
+        {q:"Capital in accounting means:",options:["Cash in business","Total assets","Owner's investment in business","Total liabilities"],answer:2,exp:"Capital = owner's investment/equity in the business. Capital = Assets - Liabilities (from owner's perspective)."},
+        {q:"Liabilities are:",options:["What business owns","What business owes to outsiders","Owner's investment","Business profits"],answer:1,exp:"Liabilities are amounts owed by the business to outsiders (creditors, lenders). They are obligations of the business."},
+        {q:"The accounting equation is:",options:["Assets = Liabilities","Assets = Capital + Liabilities","Capital = Assets + Liabilities","Liabilities = Assets + Capital"],answer:1,exp:"Fundamental accounting equation: Assets = Capital + Liabilities (or Assets = Liabilities + Owner's Equity)."},
+      ],
+      2:[
+        {q:"The concept that assumes business will continue indefinitely is:",options:["Money measurement concept","Going concern concept","Accrual concept","Consistency concept"],answer:1,exp:"Going Concern concept: business is assumed to continue indefinitely. Assets valued at cost, not liquidation value."},
+        {q:"Accrual concept means:",options:["Record only cash transactions","Record transactions when cash is received/paid","Record revenues when earned and expenses when incurred","Record only credit transactions"],answer:2,exp:"Accrual concept: revenues recorded when earned (not when cash received) and expenses when incurred (not when paid)."},
+        {q:"The convention of conservatism means:",options:["Record all expected profits","Anticipate no profits but provide for all losses","Record only actual transactions","Be consistent in accounting methods"],answer:1,exp:"Conservatism (prudence): anticipate no profit, provide for all possible losses. 'Play it safe' in accounting."},
+        {q:"Matching concept states that:",options:["Assets must match liabilities","Expenses must be matched with revenues of same period","Debit must equal credit","Income must match expenditure"],answer:1,exp:"Matching concept: expenses of a period must be matched with revenues of that same period to find correct profit/loss."},
+        {q:"Business entity concept means:",options:["Business is separate from its owner","Business can sue others","Business is a legal entity","Owner is responsible for debts"],answer:0,exp:"Business entity concept: business is treated as separate from its owner. Owner's personal transactions are not mixed with business."},
+        {q:"Money measurement concept states:",options:["Only monetary transactions are recorded","All assets are measured in money","Inflation should be considered","Money value changes over time"],answer:0,exp:"Money measurement concept: only transactions that can be expressed in monetary terms are recorded in accounts."},
+        {q:"The cost concept means assets are recorded at:",options:["Market value","Replacement value","Original cost","Realizable value"],answer:2,exp:"Cost concept (Historical cost): assets are recorded at their original purchase price, not current market value."},
+        {q:"Dual aspect concept means every transaction has:",options:["Two effects (debit and credit)","Two parties involved","Two documents","Two accounts affected"],answer:0,exp:"Dual aspect concept: every transaction has two aspects — debit and credit. Basis of double entry system."},
+        {q:"The period concept (accounting period) refers to:",options:["Time taken to complete a transaction","Regular time intervals for preparing accounts","Period of depreciation","Loan repayment period"],answer:1,exp:"Accounting period concept: financial statements prepared at regular intervals (usually one year) to show periodic performance."},
+        {q:"Materiality concept means:",options:["Only significant items need strict accounting treatment","All items must be recorded","Small items ignored completely","Only material assets recorded"],answer:0,exp:"Materiality: only items significant enough to affect decisions need strict accounting. Immaterial items can be treated simply."},
+      ],
+      3:[
+        {q:"In double entry system, every transaction affects:",options:["One account","Two accounts (minimum)","Three accounts","Four accounts"],answer:1,exp:"Double entry system: every transaction affects at least two accounts — one debited and one credited by equal amounts."},
+        {q:"The rule for personal accounts is:",options:["Debit what comes in, Credit what goes out","Debit the receiver, Credit the giver","Debit all expenses, Credit all incomes","Debit assets, Credit liabilities"],answer:1,exp:"Personal account rule: Debit the receiver (person receiving benefit), Credit the giver (person giving benefit)."},
+        {q:"Real account rule is:",options:["Debit the receiver, Credit the giver","Debit what comes in, Credit what goes out","Debit all losses, Credit all gains","Debit expenses, Credit income"],answer:1,exp:"Real account (assets) rule: Debit what comes in (asset increasing), Credit what goes out (asset decreasing)."},
+        {q:"Nominal account rule is:",options:["Debit the receiver, Credit the giver","Debit what comes in, Credit what goes out","Debit all expenses and losses, Credit all incomes and gains","Debit assets, Credit liabilities"],answer:2,exp:"Nominal account rule: Debit all expenses and losses, Credit all incomes and gains."},
+        {q:"A journal is:",options:["Final book of accounts","Book of original entry","Summary of accounts","Balance sheet"],answer:1,exp:"Journal is the book of original/first entry where transactions are first recorded in chronological order."},
+        {q:"Ledger is called:",options:["Book of original entry","Principal book of accounts","Subsidiary book","Cash book"],answer:1,exp:"Ledger is the principal/main book of accounts. All journal entries are posted to ledger accounts."},
+        {q:"Cash account is a:",options:["Personal account","Real account","Nominal account","Representative account"],answer:1,exp:"Cash account is a real account (tangible asset). Rule: Debit when cash comes in, Credit when cash goes out."},
+        {q:"Which of the following is a nominal account?",options:["Cash account","Debtor's account","Salary account","Machinery account"],answer:2,exp:"Salary account is a nominal account (expense). Nominal accounts are closed at year end to Trading/P&L account."},
+        {q:"The process of transferring journal entries to ledger is called:",options:["Journalizing","Posting","Balancing","Tallying"],answer:1,exp:"Posting is the process of transferring journal entries to respective ledger accounts."},
+        {q:"Narration in a journal entry is:",options:["Date of transaction","Name of accounts","Brief explanation of transaction","Amount of transaction"],answer:2,exp:"Narration is a brief explanation written below each journal entry explaining the nature of the transaction."},
+      ],
+      5:[
+        {q:"Bank Reconciliation Statement is prepared by:",options:["Bank","Business","Both","Government"],answer:1,exp:"BRS is prepared by the business (account holder) to reconcile differences between cash book and bank passbook."},
+        {q:"The main purpose of BRS is:",options:["To find bank balance","To reconcile differences between cash book and passbook","To calculate interest","To detect errors in bank"],answer:1,exp:"BRS reconciles the difference between cash book balance and passbook balance at a given date."},
+        {q:"Unpresented cheques are cheques:",options:["Issued but not yet presented to bank","Received but not deposited","Bounced by bank","Cancelled by business"],answer:0,exp:"Unpresented (outstanding) cheques: issued by business and recorded in cash book, but not yet presented to bank for payment."},
+        {q:"Uncollected cheques are cheques:",options:["Issued by business","Deposited in bank but not yet cleared","Lost in transit","Returned by bank"],answer:1,exp:"Uncollected (uncleared) cheques: deposited in bank and recorded in cash book, but not yet credited by bank."},
+        {q:"If passbook shows higher balance than cash book, the difference may be due to:",options:["Unpresented cheques","Uncollected cheques","Bank charges not recorded","Direct deposits by customers"],answer:3,exp:"Direct deposits (credit transfers) by customers increase passbook balance but not yet recorded in cash book — causing passbook to show higher balance."},
+        {q:"Bank charges are recorded in:",options:["Cash book only","Passbook only","Both simultaneously","Neither"],answer:1,exp:"Bank charges are first recorded in passbook by bank. Business records them in cash book only when they see the passbook."},
+        {q:"BRS is:",options:["Part of double entry system","A statement, not an account","An account in ledger","Part of final accounts"],answer:1,exp:"BRS is a statement (not an account). It's prepared to explain differences — doesn't form part of formal accounting records."},
+        {q:"If cash book shows Dr balance of ₹5000 and BRS shows unpresented cheques of ₹1000, passbook balance is:",options:["₹4000","₹6000","₹5000","₹1000"],answer:0,exp:"Passbook balance = Cash book balance - Unpresented cheques = ₹5000 - ₹1000 = ₹4000 (cheques issued but not yet paid by bank)."},
+        {q:"Interest credited by bank but not recorded in cash book will cause:",options:["Cash book balance to be higher","Passbook balance to be higher","No difference","Both to be equal"],answer:1,exp:"Interest credited by bank increases passbook balance. Until recorded in cash book, passbook shows higher balance."},
+        {q:"Dishonoured cheque means:",options:["Cheque not issued","Cheque not cleared by bank","Cheque lost","Cheque cancelled"],answer:1,exp:"Dishonoured (bounced) cheque: bank refuses to pay because of insufficient funds or signature mismatch."},
+      ],
+    };
+
+    let currentChapter=null,questions=[],currentQ=0,score=0,timer=null,timeLeft=20,answered=false;
+
+    function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+    function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function showError(msg){const box=document.getElementById('errorBox');document.getElementById('errorMsg').textContent=msg;box.style.display='block';}
+    function getBackup(num){if(BACKUP[num])return shuffle(BACKUP[num]).slice(0,10);return [{q:`Backup questions for this chapter coming soon!`,options:["Okay","Got it","Sure","Fine"],answer:0,exp:"Please check back soon."}];}
+
+    async function fetchQuestions(chapter){
+      try{
+        const res=await fetch('/.netlify/functions/ask-groq',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chapter:chapter.num,chapterName:chapter.name,subject:'Accountancy',classNum:'11'})});
+        const data=await res.json();
+        if(data.questions&&data.questions.length>=5)return data.questions;
+        throw new Error('Invalid response');
+      }catch(err){
+        console.warn('Netlify function failed:',err);
+        showError('Using backup questions. AI unavailable.');
+        return getBackup(chapter.num);
+      }
+    }
+
+    function startTimer(){clearInterval(timer);timeLeft=20;updateTimerDisplay();timer=setInterval(()=>{timeLeft--;updateTimerDisplay();if(timeLeft<=0){clearInterval(timer);timeUp();}},1000);}
+    function updateTimerDisplay(){const el=document.getElementById('timerCircle');el.textContent=timeLeft;el.className='timer-circle';if(timeLeft<=5)el.classList.add('danger');else if(timeLeft<=10)el.classList.add('warning');}
+    function timeUp(){if(!answered){answered=true;revealAnswer(-1);}}
+
+    function loadQuestion(){
+      if(currentQ>=questions.length){showResults();return;}
+      answered=false;
+      const q=questions[currentQ];
+      document.getElementById('qNum').textContent=currentQ+1;
+      document.getElementById('qTotal').textContent=questions.length;
+      document.getElementById('scoreDisplay').textContent=score;
+      document.getElementById('questionChapter').textContent=`Chapter ${currentChapter.num}`;
+      document.getElementById('questionText').textContent=q.q;
+      document.getElementById('progressBar').style.width=`${(currentQ/questions.length)*100}%`;
+      const grid=document.getElementById('optionsGrid');
+      grid.innerHTML='';
+      ['A','B','C','D'].forEach((label,i)=>{
+        if(!q.options[i])return;
+        const btn=document.createElement('button');
+        btn.className='option-btn';
+        btn.innerHTML=`<span class="option-label">${label}</span><span>${q.options[i]}</span>`;
+        btn.onclick=()=>selectAnswer(i);
+        grid.appendChild(btn);
+      });
+      document.getElementById('explanationBox').style.display='none';
+      document.getElementById('explanationBox').className='explanation-box';
+      document.getElementById('nextBtn').style.display='none';
+      startTimer();
+    }
+
+    function selectAnswer(idx){if(answered)return;answered=true;clearInterval(timer);revealAnswer(idx);}
+
+    function revealAnswer(selected){
+      const q=questions[currentQ];
+      const btns=document.querySelectorAll('.option-btn');
+      const isCorrect=selected===q.answer;
+      if(isCorrect)score++;
+      btns.forEach((btn,i)=>{btn.disabled=true;if(i===q.answer)btn.classList.add('correct');else if(i===selected)btn.classList.add('wrong');});
+      const expBox=document.getElementById('explanationBox');
+      expBox.style.display='block';
+      expBox.className=`explanation-box ${isCorrect?'correct-exp':'wrong-exp'}`;
+      expBox.innerHTML=isCorrect?`✅ <strong>Correct!</strong> ${q.exp}`:`❌ <strong>${selected===-1?"Time's up!":"Wrong."}</strong> Correct: <strong>${q.options[q.answer]}</strong>. ${q.exp}`;
+      document.getElementById('nextBtn').style.display='block';
+      document.getElementById('scoreDisplay').textContent=score;
+    }
+
+    function nextQuestion(){currentQ++;loadQuestion();}
+
+    function showResults(){
+      clearInterval(timer);
+      const total=questions.length,wrong=total-score,percent=Math.round((score/total)*100);
+      document.getElementById('finalScore').textContent=score;
+      document.getElementById('finalTotal').textContent=total;
+      document.getElementById('statCorrect').textContent=score;
+      document.getElementById('statWrong').textContent=wrong;
+      document.getElementById('statPercent').textContent=percent+'%';
+      let emoji,title,subtitle;
+      if(percent===100){emoji='🏆';title='Perfect Score!';subtitle='Accounts genius!';}
+      else if(percent>=80){emoji='🎉';title='Excellent!';subtitle='You really know your accounts!';}
+      else if(percent>=60){emoji='👍';title='Good job!';subtitle='Keep it up!';}
+      else if(percent>=40){emoji='📚';title='Keep Studying!';subtitle='Review and try again.';}
+      else{emoji='💪';title="Don't Give Up!";subtitle='Accounts takes practice!';}
+      document.getElementById('resultsEmoji').textContent=emoji;
+      document.getElementById('resultsTitle').textContent=title;
+      document.getElementById('resultsSubtitle').textContent=subtitle;
+      document.getElementById('progressBar').style.width='100%';
+      showScreen('screen-results');
+    }
+
+    function retryGame(){startGame(currentChapter);}
+
+    async function startGame(chapter){
+      currentChapter=chapter;score=0;currentQ=0;
+      showScreen('screen-loading');
+      document.getElementById('loadingChapter').textContent=`Chapter ${chapter.num}: ${chapter.name}`;
+      questions=await fetchQuestions(chapter);
+      showScreen('screen-game');
+      loadQuestion();
+    }
+
+    function init(){
+      const grid=document.getElementById('chapterGrid');
+      CHAPTERS.forEach(ch=>{
+        const btn=document.createElement('button');
+        btn.className='chapter-btn';
+        btn.innerHTML=`<div class="ch-num">Chapter ${ch.num}</div><div class="ch-name">${ch.name}</div>`;
+        btn.onclick=()=>startGame(ch);
+        grid.appendChild(btn);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>

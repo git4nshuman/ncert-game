@@ -7,91 +7,20 @@
   <link rel="stylesheet" href="../css/style.css" />
   <style>
     .subject-section { margin-bottom: 80px; }
-
-    .subject-heading {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 32px;
-      padding: 24px 28px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-    }
-
-    .subject-heading .icon {
-      width: 56px; height: 56px;
-      border-radius: var(--radius-md);
-      display: grid;
-      place-items: center;
-      font-size: 1.6rem;
-      flex-shrink: 0;
-    }
-
-    .subject-heading h2 {
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-
-    .subject-heading p {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      margin-top: 3px;
-    }
-
-    .coming-soon-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 14px;
-    }
-
-    .game-placeholder {
-      background: var(--bg-card);
-      border: 1px dashed var(--border);
-      border-radius: var(--radius-md);
-      padding: 24px 20px;
-      text-align: center;
-      opacity: 0.5;
-    }
-
-    .game-placeholder .placeholder-icon {
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-    }
-
-    .game-placeholder h4 {
-      font-family: var(--font-display);
-      font-size: 0.9rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--text-secondary);
-    }
-
-    .game-placeholder p {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .soon-tag {
-      display: inline-block;
-      margin-top: 10px;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-    }
+    .subject-heading { display:flex; align-items:center; gap:16px; margin-bottom:32px; padding:24px 28px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); }
+    .subject-heading .icon { width:56px; height:56px; border-radius:var(--radius-md); display:grid; place-items:center; font-size:1.6rem; flex-shrink:0; }
+    .subject-heading h2 { font-family:var(--font-display); font-size:1.6rem; font-weight:800; letter-spacing:-0.5px; }
+    .subject-heading p { font-size:0.85rem; color:var(--text-secondary); margin-top:3px; }
+    .coming-soon-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+    .game-placeholder { background:var(--bg-card); border:1px dashed var(--border); border-radius:var(--radius-md); padding:24px 20px; text-align:center; opacity:0.5; }
+    .game-placeholder .placeholder-icon { font-size:1.8rem; margin-bottom:10px; }
+    .game-placeholder h4 { font-family:var(--font-display); font-size:0.9rem; font-weight:700; margin-bottom:6px; color:var(--text-secondary); }
+    .game-placeholder p { font-size:0.75rem; color:var(--text-muted); }
+    .soon-tag { display:inline-block; margin-top:10px; font-size:0.65rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 10px; border-radius:999px; background:var(--bg); border:1px solid var(--border); color:var(--text-muted); }
   </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
   <nav class="navbar">
     <a href="../index.html" class="nav-logo">
       <div class="logo-icon">🎮</div>
@@ -103,7 +32,6 @@
     </ul>
   </nav>
 
-  <!-- PAGE HERO -->
   <div class="page-hero">
     <div class="breadcrumb">
       <a href="../index.html">Home</a>
@@ -113,13 +41,12 @@
       <span>Class 12</span>
     </div>
     <h1><span class="text-science">Science</span><br />Class 12</h1>
-    <p>Board exam level games. Every chapter, every concept — made playable.</p>
+    <p>Board level games. Every chapter, every concept — made playable.</p>
   </div>
 
-  <!-- GAMES SECTION -->
   <div class="games-section">
 
-    <!-- ── PHYSICS ── -->
+    <!-- PHYSICS -->
     <div class="subject-section" id="physics">
       <div class="subject-heading">
         <div class="icon" style="background:rgba(124,131,255,0.15);">⚡</div>
@@ -129,126 +56,57 @@
         </div>
       </div>
       <div class="coming-soon-grid">
-        <a href="physics-12-mcq.html" class="game-card"
-  <div class="game-type-badge" style="background:rgba(124,131,255,0.15);color:var(--physics);">🧠 MCQ</div>
-  <h4>MCQ Blitz</h4>
-  <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
-  <div class="game-difficulty">
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-  </div>
-</a>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🃏</div>
-          <h4>Flashcard Flip</h4>
-          <p>Flip cards to match concepts with definitions</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔗</div>
-          <h4>Match the Pair</h4>
-          <p>Connect formulas to their correct names</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">⌨️</div>
-          <h4>Fill in the Blank</h4>
-          <p>Complete key statements from NCERT</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔤</div>
-          <h4>Word Scramble</h4>
-          <p>Unscramble physics terms before time runs out</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🧩</div>
-          <h4>Crossword</h4>
-          <p>Solve physics crosswords topic by topic</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">📊</div>
-          <h4>True or False Streak</h4>
-          <p>How long can you keep your streak alive?</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🏆</div>
-          <h4>Boss Round</h4>
-          <p>Mixed challenge — all chapters, all types</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
+        <a href="physics-12-mcq.html" class="game-card" style="text-decoration:none;">
+          <div class="game-type-badge" style="background:rgba(124,131,255,0.15);color:var(--physics);">🧠 MCQ</div>
+          <h4>MCQ Blitz</h4>
+          <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
+          <div class="game-difficulty">
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+          </div>
+        </a>
+        <div class="game-placeholder"><div class="placeholder-icon">🃏</div><h4>Flashcard Flip</h4><p>Flip cards to match concepts with definitions</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔗</div><h4>Match the Pair</h4><p>Connect formulas to their correct names</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">⌨️</div><h4>Fill in the Blank</h4><p>Complete key statements from NCERT</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔤</div><h4>Word Scramble</h4><p>Unscramble physics terms before time runs out</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🧩</div><h4>Crossword</h4><p>Solve physics crosswords topic by topic</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">📊</div><h4>True or False Streak</h4><p>How long can you keep your streak alive?</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🏆</div><h4>Boss Round</h4><p>Mixed challenge — all chapters, all types</p><span class="soon-tag">Coming Soon</span></div>
       </div>
     </div>
 
-    <!-- ── CHEMISTRY ── -->
+    <!-- CHEMISTRY -->
     <div class="subject-section" id="chemistry">
       <div class="subject-heading">
         <div class="icon" style="background:rgba(255,107,157,0.15);">🧪</div>
         <div>
           <h2 style="color:var(--chemistry)">Chemistry</h2>
-          <p>Solutions · Electrochemistry · Coordination Compounds · Biomolecules · Polymers</p>
+          <p>Solutions · Electrochemistry · Coordination Compounds · Biomolecules</p>
         </div>
       </div>
-      <a href="chemistry-12-mcq.html" class="game-card" style="text-decoration:none;">
-  <div class="game-type-badge" style="background:rgba(255,107,157,0.15);color:var(--chemistry);">🧠 MCQ</div>
-  <h4>MCQ Blitz</h4>
-  <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
-  <div class="game-difficulty">
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-  </div>
-</a>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🃏</div>
-          <h4>Flashcard Flip</h4>
-          <p>Flip cards to match concepts with definitions</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔗</div>
-          <h4>Match the Pair</h4>
-          <p>Match reactions to their correct types</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">⌨️</div>
-          <h4>Fill in the Blank</h4>
-          <p>Complete chemical equations and NCERT statements</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">⚗️</div>
-          <h4>Reaction Guesser</h4>
-          <p>Identify the type of reaction from the equation</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🧩</div>
-          <h4>Crossword</h4>
-          <p>Solve chemistry crosswords topic by topic</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">📊</div>
-          <h4>True or False Streak</h4>
-          <p>How long can you keep your streak alive?</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🏆</div>
-          <h4>Boss Round</h4>
-          <p>Mixed challenge — all chapters, all types</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
+      <div class="coming-soon-grid">
+        <a href="chemistry-12-mcq.html" class="game-card" style="text-decoration:none;">
+          <div class="game-type-badge" style="background:rgba(255,107,157,0.15);color:var(--chemistry);">🧠 MCQ</div>
+          <h4>MCQ Blitz</h4>
+          <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
+          <div class="game-difficulty">
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+          </div>
+        </a>
+        <div class="game-placeholder"><div class="placeholder-icon">🃏</div><h4>Flashcard Flip</h4><p>Flip cards to match concepts with definitions</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔗</div><h4>Match the Pair</h4><p>Match reactions to their correct types</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">⌨️</div><h4>Fill in the Blank</h4><p>Complete chemical equations and NCERT statements</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">⚗️</div><h4>Reaction Guesser</h4><p>Identify the type of reaction from the equation</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🧩</div><h4>Crossword</h4><p>Solve chemistry crosswords topic by topic</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">📊</div><h4>True or False Streak</h4><p>How long can you keep your streak alive?</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🏆</div><h4>Boss Round</h4><p>Mixed challenge — all chapters, all types</p><span class="soon-tag">Coming Soon</span></div>
       </div>
     </div>
 
-    <!-- ── BIOLOGY ── -->
+    <!-- BIOLOGY -->
     <div class="subject-section" id="biology">
       <div class="subject-heading">
         <div class="icon" style="background:rgba(86,207,145,0.15);">🌿</div>
@@ -257,62 +115,28 @@
           <p>Genetics · Evolution · Biotechnology · Reproduction · Ecology</p>
         </div>
       </div>
-      <a href="biology-12-mcq.html" class="game-card" style="text-decoration:none;">
-  <div class="game-type-badge" style="background:rgba(86,207,145,0.15);color:var(--biology);">🧠 MCQ</div>
-  <h4>MCQ Blitz</h4>
-  <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
-  <div class="game-difficulty">
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-  </div>
-</a>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🃏</div>
-          <h4>Flashcard Flip</h4>
-          <p>Flip cards to match concepts with definitions</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔗</div>
-          <h4>Match the Pair</h4>
-          <p>Match scientists to their discoveries</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">⌨️</div>
-          <h4>Fill in the Blank</h4>
-          <p>Complete key NCERT statements about genetics & evolution</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔬</div>
-          <h4>Diagram Label</h4>
-          <p>Label parts of diagrams from NCERT chapters</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🧩</div>
-          <h4>Crossword</h4>
-          <p>Solve biology crosswords topic by topic</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">📊</div>
-          <h4>True or False Streak</h4>
-          <p>How long can you keep your streak alive?</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🏆</div>
-          <h4>Boss Round</h4>
-          <p>Mixed challenge — all chapters, all types</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
+      <div class="coming-soon-grid">
+        <a href="biology-12-mcq.html" class="game-card" style="text-decoration:none;">
+          <div class="game-type-badge" style="background:rgba(86,207,145,0.15);color:var(--biology);">🧠 MCQ</div>
+          <h4>MCQ Blitz</h4>
+          <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
+          <div class="game-difficulty">
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+          </div>
+        </a>
+        <div class="game-placeholder"><div class="placeholder-icon">🃏</div><h4>Flashcard Flip</h4><p>Flip cards to match concepts with definitions</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔗</div><h4>Match the Pair</h4><p>Match scientists to their discoveries</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">⌨️</div><h4>Fill in the Blank</h4><p>Complete key NCERT statements about genetics & evolution</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔬</div><h4>Diagram Label</h4><p>Label parts of diagrams from NCERT chapters</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🧩</div><h4>Crossword</h4><p>Solve biology crosswords topic by topic</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">📊</div><h4>True or False Streak</h4><p>How long can you keep your streak alive?</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🏆</div><h4>Boss Round</h4><p>Mixed challenge — all chapters, all types</p><span class="soon-tag">Coming Soon</span></div>
       </div>
     </div>
 
-    <!-- ── MATHEMATICS ── -->
+    <!-- MATHEMATICS -->
     <div class="subject-section" id="maths">
       <div class="subject-heading">
         <div class="icon" style="background:rgba(255,159,69,0.15);">📐</div>
@@ -321,64 +145,29 @@
           <p>Calculus · Matrices · Vectors · 3D Geometry · Linear Programming · Probability</p>
         </div>
       </div>
-      <a href="maths-12-mcq.html" class="game-card" style="text-decoration:none;">
-  <div class="game-type-badge" style="background:rgba(86,207,145,0.15);color:var(--maths);">🧠 MCQ</div>
-  <h4>MCQ Blitz</h4>
-  <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
-  <div class="game-difficulty">
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-    <div class="difficulty-dot filled"></div>
-  </div>
-</a>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🃏</div>
-          <h4>Flashcard Flip</h4>
-          <p>Flip cards to match formulas with their names</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔗</div>
-          <h4>Match the Pair</h4>
-          <p>Match formulas to their correct applications</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">⌨️</div>
-          <h4>Fill in the Blank</h4>
-          <p>Complete equations and mathematical statements</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🔢</div>
-          <h4>Number Rush</h4>
-          <p>Solve rapid calculations against the clock</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🧩</div>
-          <h4>Crossword</h4>
-          <p>Solve maths crosswords topic by topic</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">📊</div>
-          <h4>True or False Streak</h4>
-          <p>How long can you keep your streak alive?</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
-        <div class="game-placeholder">
-          <div class="placeholder-icon">🏆</div>
-          <h4>Boss Round</h4>
-          <p>Mixed challenge — all chapters, all types</p>
-          <span class="soon-tag">Coming Soon</span>
-        </div>
+      <div class="coming-soon-grid">
+        <a href="maths-12-mcq.html" class="game-card" style="text-decoration:none;">
+          <div class="game-type-badge" style="background:rgba(255,159,69,0.15);color:var(--maths);">🧠 MCQ</div>
+          <h4>MCQ Blitz</h4>
+          <p>Fast-fire multiple choice questions chapter by chapter. Powered by AI.</p>
+          <div class="game-difficulty">
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+            <div class="difficulty-dot filled"></div>
+          </div>
+        </a>
+        <div class="game-placeholder"><div class="placeholder-icon">🃏</div><h4>Flashcard Flip</h4><p>Flip cards to match formulas with their names</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔗</div><h4>Match the Pair</h4><p>Match formulas to their correct applications</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">⌨️</div><h4>Fill in the Blank</h4><p>Complete equations and mathematical statements</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🔢</div><h4>Number Rush</h4><p>Solve rapid calculations against the clock</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🧩</div><h4>Crossword</h4><p>Solve maths crosswords topic by topic</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">📊</div><h4>True or False Streak</h4><p>How long can you keep your streak alive?</p><span class="soon-tag">Coming Soon</span></div>
+        <div class="game-placeholder"><div class="placeholder-icon">🏆</div><h4>Boss Round</h4><p>Mixed challenge — all chapters, all types</p><span class="soon-tag">Coming Soon</span></div>
       </div>
     </div>
 
   </div><!-- /games-section -->
 
-  <!-- FOOTER -->
   <footer>
     <div class="footer-logo">🎮 NCERTGame</div>
     <p>Built for Class 11 &amp; 12 students · CBSE · 2025–26 Syllabus</p>
